@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdl
+#include <stdlib.h>
 #include <conio.h>
 
 #define MAX 100
