@@ -2,7 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
+#include <stdbool.h>
+
 #define MAX 100
+
 typedef struct {
     char maSV[20];
     char tenSV[50];
@@ -13,7 +16,7 @@ typedef struct {
 
 SinhVien ds[MAX];
 int n = 0;
-int isLocked = 0; 
+int isLocked = false; 
 
 // --- 1. TINH DIEM VA XEP LOAI ---
 void tinhDiem(SinhVien *sv) {
@@ -31,6 +34,7 @@ void tinhDiem(SinhVien *sv) {
 
 // --- 2. GHI FILE ---
 void ghiFile(char tenFile[]) {
+    if (n==0) return;
     FILE *fp = fopen(tenFile, "w"); 
     int i; // Khai bao bien chay ra ngoai de tranh loi C99
     if (!fp) return;
@@ -86,9 +90,10 @@ void nhap(char tenFileChinh[]) {
     printf("\nBan co muon LUU du lieu vua nhap vao file khong? (y/n): ");
     c = getch();
     if (c == 'y' || c == 'Y') {
-        ghiFile("ly_backup.dat");
+        char Backup_file[] = "temp_backup.dat";
+        ghiFile(Backup_file);
         ghiFile(tenFileChinh);
-        printf("\n[OK] Da luu vao file %s va ly_backup.dat!\n", tenFileChinh);
+        printf("\n[OK] Da luu vao file %s va %s!\n", tenFileChinh, Backup_file);
     } else {
         n = n_cu; 
         printf("\n[HUY] Da huy bo du lieu. Danh sach se giu nguyen.\n");
@@ -102,11 +107,11 @@ void xemDiem() {
         printf("\n[!] Danh sach trong!\n");
         return;
     }
-    printf("\n%-12s %-22s %-5s %-5s %-5s %-5s %-5s %-5s %-6s %-5s\n", 
-           "MSSV", "Ho Ten", "L1", "L2", "P1", "P2", "Pre", "End", "DTB", "Grade");
-    printf("------------------------------------------------------------------------------------\n");
+    printf("\n%-12s %-35s %-5s %-5s %-5s %-5s %-5s %-5s %-6s %-5s\n", 
+           "MSSV", "Ho va ten", "L1", "L2", "P1", "P2", "Pre", "End", "DTB", "Grade");
+    printf("____________________________________________________________________________________________________\n\n");
     for (i = 0; i < n; i++) {
-        printf("%-12s %-22s %-5.1f %-5.1f %-5.1f %-5.1f %-5.1f %-5.1f %-6.1f %-5s\n",
+        printf("%-12s %-35s %-5.1f %-5.1f %-5.1f %-5.1f %-5.1f %-5.1f %-6.1f %-5s\n",
                ds[i].maSV, ds[i].tenSV, ds[i].lab1, ds[i].lab2, ds[i].pt1, ds[i].pt2, 
                ds[i].presentation, ds[i].finalTest, ds[i].dtb, ds[i].diemChu);
     }
@@ -115,12 +120,13 @@ void xemDiem() {
 void docFile(char tenFile[]) {
     FILE *fp = fopen(tenFile, "r");
     int len;
-    if (!fp) { n = 0; return; }
+    if (!fp) return;
     n = 0;
     while (n < MAX && fscanf(fp, "%s", ds[n].maSV) != EOF) {
         if (fscanf(fp, " %[^0-9]", ds[n].tenSV) != 1) break;
         len = strlen(ds[n].tenSV);
-        while(len > 0 && (ds[n].tenSV[len-1] == ' ' || ds[n].tenSV[len-1] == '\t')) ds[n].tenSV[--len] = '\0';
+        while(len > 0 && (ds[n].tenSV[len-1] == ' ' || ds[n].tenSV[len-1] == '\t')) 
+            ds[n].tenSV[--len] = '\0';
         if (fscanf(fp, "%f %f %f %f %f %f", &ds[n].lab1, &ds[n].lab2, &ds[n].pt1, &ds[n].pt2, &ds[n].presentation, &ds[n].finalTest) == 6) {
             tinhDiem(&ds[n]);
             n++;
@@ -212,7 +218,12 @@ int main() {
                 break;
             case '6': 
                 printf("\nGiao vien xac nhan (khong the sua diem)? (y/n): ");
-                if (getch() == 'y') { ghiFile(tenFile); isLocked = 1; printf("\nDa xac nhan!\n"); }
+                char signal = getch();
+                if (signal == 'y') {
+                    ghiFile(tenFile); 
+                    isLocked = true; 
+                    printf("\nDa xac nhan!\n");
+                } else printf("\nThao tac da bi huy\n");
                 break;
         }
     } while (choice != '5');
