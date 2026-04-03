@@ -18,7 +18,6 @@ SinhVien ds[MAX];
 int n = 0;
 int isLocked = false; 
 
-// --- 1. TINH DIEM VA XEP LOAI ---
 void tinhDiem(SinhVien *sv) {
     sv->dtb = (sv->lab1 + sv->lab2) * 0.1 
             + (sv->pt1 + sv->pt2) * 0.1 
@@ -32,11 +31,10 @@ void tinhDiem(SinhVien *sv) {
     else strcpy(sv->diemChu, "F");
 }
 
-// --- 2. GHI FILE ---
 void ghiFile(char tenFile[]) {
     if (n==0) return;
     FILE *fp = fopen(tenFile, "w"); 
-    int i; // Khai bao bien chay ra ngoai de tranh loi C99
+    int i; 
     if (!fp) return;
     for (i = 0; i < n; i++) {
         fprintf(fp, "%s %s %f %f %f %f %f %f\n", 
@@ -45,9 +43,8 @@ void ghiFile(char tenFile[]) {
     fclose(fp);
 }
 
-// --- 3. NHAP/THEM SINH VIEN (DA SUA DE XOA KHOI RAM KHI CHON 'N') ---
 void nhap(char tenFileChinh[]) {
-    int i, j; // Khai bao bien chay
+    int i, j; 
     int n_cu, n1, trung;
     char tamMSSV[20];
     char c;
@@ -100,7 +97,6 @@ void nhap(char tenFileChinh[]) {
     }
 }
 
-// --- 4. XEM DANH SACH ---
 void xemDiem() {
     int i;
     if (n == 0) {
@@ -116,7 +112,34 @@ void xemDiem() {
                ds[i].presentation, ds[i].finalTest, ds[i].dtb, ds[i].diemChu);
     }
 }
-// --- 5. DOC FILE ---
+
+void timKiem() {
+    char mssv[20];
+    int i;
+    if (n == 0) {
+        printf("\n[!] Danh sach trong!\n");
+        return;
+    }
+    printf("\nNhap MSSV can tim: ");
+    scanf("%s", mssv);
+    for (i = 0; i < n; i++) {
+        if (strcmp(ds[i].maSV, mssv) == 0) {
+            printf("\n--- THONG TIN SINH VIEN TIM THAY ---\n");
+            printf("MSSV: %s\n", ds[i].maSV);
+            printf("Ho va Ten: %s\n", ds[i].tenSV);
+            printf("Diem Lab: %.1f, %.1f\n", ds[i].lab1, ds[i].lab2);
+            printf("Diem PT: %.1f, %.1f\n", ds[i].pt1, ds[i].pt2);
+            printf("Diem Presentation: %.1f\n", ds[i].presentation);
+            printf("Diem Final Test: %.1f\n", ds[i].finalTest);
+            printf("------------------------------------\n");
+            printf("Diem Trung Binh: %.1f\n", ds[i].dtb);
+            printf("Xep Loai: %s\n", ds[i].diemChu);
+            return;
+        }
+    }
+    printf("\n[!] Khong tim thay sinh vien co MSSV: %s\n", mssv);
+}
+
 void docFile(char tenFile[]) {
     FILE *fp = fopen(tenFile, "r");
     int len;
@@ -134,7 +157,7 @@ void docFile(char tenFile[]) {
     }
     fclose(fp);
 }
-// --- 6. SUA DIEM ---
+
 void sua() {
     char mssv[20];
     int i;
@@ -146,40 +169,40 @@ void sua() {
     scanf("%s", mssv);
     for (i = 0; i < n; i++) {
         if (strcmp(ds[i].maSV, mssv) == 0) {
-            printf("Sua diem cho %s: ", ds[i].tenSV);
+            printf("Sua diem cho %s: \n", ds[i].tenSV);
             while(1){
-            	printf("1.sua diem lab1,lab2\n");
-            	printf("2.sua diem pt1,pt2\n");
-            	printf("3.sua diem presentation\n");
-            	printf("4.sua diem finalTest\n");
-            	printf("5.sua toan bo diem\n");
-            	printf("6.hoan tat sua diem\n");
-            	int lc; scanf("%d",&lc);
-            	if(lc==1){
-            		printf("nhap lai diem lab1,lab2 :");
-            		scanf("%f%f",&ds[i].lab1,&ds[i].lab2);
-				}
-				else if(lc==2){
-					printf("nhap lai diem pt1,pt2 :");
-					scanf("%f%f",&ds[i].pt1,&ds[i].pt2);
-				}
-				else if(lc==3){
-					printf("nhap lai diem presentation :");
-					scanf("%f",&ds[i].presentation);
-				}
-				else if(lc==4){
-					printf("nhap lai diem final test :");
-					scanf("%f",&ds[i].finalTest);
-				}
-				else if(lc==5){
-					printf("nhap lai toan bo diem :");
-					scanf("%f %f %f %f %f %f", &ds[i].lab1, &ds[i].lab2, &ds[i].pt1, &ds[i].pt2, &ds[i].presentation, &ds[i].finalTest);
-				}
-				else {
-					break;
-				}	
-			}
-            //scanf("%f %f %f %f %f %f", &ds[i].lab1, &ds[i].lab2, &ds[i].pt1, &ds[i].pt2, &ds[i].presentation, &ds[i].finalTest);
+                printf("1. Sua diem lab1, lab2\n");
+                printf("2. Sua diem pt1, pt2\n");
+                printf("3. Sua diem presentation\n");
+                printf("4. Sua diem finalTest\n");
+                printf("5. Sua toan bo diem\n");
+                printf("6. Hoan tat sua diem\n");
+                printf("Chon: ");
+                int lc; scanf("%d",&lc);
+                if(lc==1){
+                    printf("Nhap lai diem lab1, lab2: ");
+                    scanf("%f %f",&ds[i].lab1,&ds[i].lab2);
+                }
+                else if(lc==2){
+                    printf("Nhap lai diem pt1, pt2: ");
+                    scanf("%f %f",&ds[i].pt1,&ds[i].pt2);
+                }
+                else if(lc==3){
+                    printf("Nhap lai diem presentation: ");
+                    scanf("%f",&ds[i].presentation);
+                }
+                else if(lc==4){
+                    printf("Nhap lai diem final test: ");
+                    scanf("%f",&ds[i].finalTest);
+                }
+                else if(lc==5){
+                    printf("Nhap lai toan bo diem: ");
+                    scanf("%f %f %f %f %f %f", &ds[i].lab1, &ds[i].lab2, &ds[i].pt1, &ds[i].pt2, &ds[i].presentation, &ds[i].finalTest);
+                }
+                else {
+                    break;
+                }   
+            }
             tinhDiem(&ds[i]);
             printf("Da cap nhat tam thoi!\n");
             return;
@@ -187,16 +210,17 @@ void sua() {
     }
     printf("Khong tim thay!\n");
 }
+
 int main() {
     char tenFile[50], choice;
-    int i, j; // Bien chay cho sap xep
+    int i, j; 
     SinhVien tam;
-    printf("Nhap ten file (vidu: ly.dat): "); 
+    printf("Nhap ten file: "); 
     scanf("%s", tenFile);
     docFile(tenFile);
     do {
         printf("\n===== MENU (%s) [%s] =====\n", tenFile, isLocked ? "DA CHOT" : "DANG MO");
-        printf("1. Nhap/Them diem\n2. Xem danh sach diem\n3. Sua diem\n4. Sap xep theo DTB\n5. Luu file & Thoat\n6. CHOT & LUU FILE\nChon: ");
+        printf("1. Nhap/Them diem\n2. Xem danh sach diem\n3. Sua diem\n4. Sap xep theo DTB\n5. Xem thong tin sinh vien\n6. Luu file & Thoat\n7. CHOT & LUU FILE\nChon: ");
         scanf(" %c", &choice); 
         switch (choice) {
             case '1': nhap(tenFile); break;
@@ -212,11 +236,12 @@ int main() {
                 }
                 xemDiem();
                 break;
-            case '5':
+            case '5': timKiem(); break;
+            case '6':
                 ghiFile(tenFile);
                 printf("Da luu. Tam biet!\n");
                 break;
-            case '6': 
+            case '7': 
                 printf("\nGiao vien xac nhan (khong the sua diem)? (y/n): ");
                 char signal = getch();
                 if (signal == 'y') {
@@ -226,6 +251,6 @@ int main() {
                 } else printf("\nThao tac da bi huy\n");
                 break;
         }
-    } while (choice != '5');
+    } while (choice != '6');
     return 0;
 }
