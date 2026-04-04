@@ -17,7 +17,7 @@ typedef struct {
 SinhVien ds[MAX];
 int n = 0;
 int isLocked = 0; 
-float wLab = 0.1, wPT = 0.1, wPre = 0.2, wFinal = 0.4;
+float wLab, wPT, wPre, wFinal;
 
 void tinhDiem(SinhVien *sv) {
     sv->dtb = (sv->lab1 + sv->lab2) * wLab 
@@ -114,7 +114,7 @@ void nhap(char tenFileChinh[]) {
 void xemDanhSach() {
     int i;
     if (n == 0) { printf("\nDanh sach trong!\n"); return; }
-    printf("\nDANH SACH SINH VIEN (Trong so: %.0f%%-%.0f%%-%.0f%%-%.0f%%)\n", wLab*100, wPT*100, wPre*100, wFinal*100);
+    printf("\nDANH SACH SINH VIEN (Trong so: %.0f%%-%.0f%%-%.0f%%-%.0f%%-%.0f%%-%.0f%%)\n", wLab*100, wLab*100, wPT*100, wPT*100, wPre*100, wFinal*100);
     printf("----------------------------------------------------------------------------------------------------------\n");
     printf("%-12s %-25s %-5s %-5s %-5s %-5s %-5s %-5s %-6s %-5s\n", 
            "MSSV", "Ho va ten", "L1", "L2", "P1", "P2", "Pre", "End", "DTB", "Loai");
@@ -134,8 +134,8 @@ void xemDiemChiTiet() {
         if (strcmp(ds[i].maSV, mssv) == 0) {
             printf("\n--- BANG DIEM CHI TIET ---");
             printf("\nMSSV: %s | Ho ten: %s", ds[i].maSV, ds[i].tenSV);
-            printf("\nLab 1&2 (%.0f%%): %.1f, %.1f", wLab*100, ds[i].lab1, ds[i].lab2);
-            printf("\nPT 1&2 (%.0f%%):  %.1f, %.1f", wPT*100, ds[i].pt1, ds[i].pt2);
+            printf("\nLab 1&2 (%.0f%% - %.0f%%): %.1f, %.1f", wLab*100, wLab*100, ds[i].lab1, ds[i].lab2);
+            printf("\nPT 1&2 (%.0f%% - %.0f%%):  %.1f, %.1f", wPT*100, wPT*100, ds[i].pt1, ds[i].pt2);
             printf("\nPre (%.0f%%):     %.1f", wPre*100, ds[i].presentation);
             printf("\nFinal (%.0f%%):   %.1f", wFinal*100, ds[i].finalTest);
             printf("\n--------------------------");
@@ -205,7 +205,7 @@ int main() {
     docFile(tenFile);
     do {
         printf("\n===== MENU (%s) [%s] =====\n", tenFile, isLocked ? "DA CHOT" : "MO");
-        printf("1. Nhap diem\n2. Xem danh sach\n3. Sua diem\n4. Sap xep\n5. Xem diem (MSSV)\n6. Luu & Thoat\n7. CHOT VINH VIEN\nChon: ");
+        printf("1. Nhap diem\n2. Xem danh sach\n3. Sua diem\n4. Sap xep\n5. Xem diem (MSSV)\n6. CHOT VINH VIEN\n7. Luu & Thoat\nChon: ");
         scanf(" %c", &choice); 
         switch (choice) {
             case '1': nhap(tenFile); break;
@@ -217,11 +217,12 @@ int main() {
                         if (ds[i].dtb < ds[j].dtb) { SinhVien t = ds[i]; ds[i] = ds[j]; ds[j] = t; }
                 xemDanhSach(); break;
             case '5': xemDiemChiTiet(); break;
-            case '6': ghiFile(tenFile); break;
-            case '7': 
+            case '7': ghiFile(tenFile); break;
+            case '6': 
                 if (!isLocked) {
                     printf("\nXac nhan CHOT? (y/n): ");
-                    if (getch() == 'y') { isLocked = 1; ghiFile(tenFile); printf("\nDA CHOT!\n"); }
+                    if (getch() == 'y') { isLocked = 1; ghiFile(tenFile); printf("\nChot diem thanh cong!\n"); }
+                    else printf("\nThao tac bi huy boi nguoi dung\n");
                 } else printf("\nDa chot roi!\n");
                 break;
         }
