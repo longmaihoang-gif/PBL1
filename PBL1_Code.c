@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define MAX 100
-
+int cheDoTong = 0;
 typedef struct {
     char maSV[20];
     char tenSV[50];
@@ -31,7 +31,17 @@ void tinhDiem(SinhVien *sv) {
     else if (sv->dtb >= 4.0) strcpy(sv->diemChu, "D");
     else strcpy(sv->diemChu, "F");
 }
+void chonFileXem(char tenFile[]) {
+    int lc;
+    printf("\nChon file xem:\n");
+    printf("1. Toan\n2. Ly\n3. Hoa\n4. Tong hop\nChon: ");
+    scanf("%d", &lc);
 
+    if (lc == 1) strcpy(tenFile, "toan.txt");
+    else if (lc == 2) strcpy(tenFile, "ly.txt");
+    else if (lc == 3) strcpy(tenFile, "hoa.txt");
+    else if (lc == 4) strcpy(tenFile, "tonghop"); 
+}
 void ghiFile(char tenFile[]) {
     FILE *fp = fopen(tenFile, "w"); 
     int i;
@@ -114,18 +124,87 @@ void nhap(char tenFileChinh[]) {
 void xemDanhSach() {
     int i;
     if (n == 0) { printf("\nDanh sach trong!\n"); return; }
-    printf("\nDANH SACH SINH VIEN (Trong so: %.0f%%-%.0f%%-%.0f%%-%.0f%%-%.0f%%-%.0f%%)\n", wLab*100, wLab*100, wPT*100, wPT*100, wPre*100, wFinal*100);
-    printf("----------------------------------------------------------------------------------------------------------\n");
-    printf("%-12s %-25s %-5s %-5s %-5s %-5s %-5s %-5s %-6s %-5s\n", 
-           "MSSV", "Ho va ten", "L1", "L2", "P1", "P2", "Pre", "End", "DTB", "Loai");
-    printf("----------------------------------------------------------------------------------------------------------\n");
-    for (i = 0; i < n; i++) {
-        printf("%-12s %-25s %-5.1f %-5.1f %-5.1f %-5.1f %-5.1f %-5.1f %-6.1f %-5s\n", 
-               ds[i].maSV, ds[i].tenSV, ds[i].lab1, ds[i].lab2, ds[i].pt1, ds[i].pt2, ds[i].presentation, ds[i].finalTest, ds[i].dtb, ds[i].diemChu);
-    }
-    printf("----------------------------------------------------------------------------------------------------------\n");
-}
 
+    printf("\nDANH SACH SINH VIEN\n");
+    printf("----------------------------------------------------------------------------------------------------------\n");
+
+    if (cheDoTong == 0) {
+        
+        printf("%-10s %-20s %-4s %-4s %-4s %-4s %-4s %-5s %-6s %-5s\n",
+            "MSSV", "Ho ten", "L1", "L2", "P1", "P2", "Pre", "Final", "DTB", "Loai");
+    } else {
+        
+        printf("%-12s %-25s %-6s %-5s\n", "MSSV", "Ho va ten", "DTB", "Loai");
+    }
+
+    printf("----------------------------------------------------------------------------------------------------------\n");
+
+    int demA=0, demB=0, demC=0, demD=0, demF=0;
+
+    for (i = 0; i < n; i++) {
+
+        if (cheDoTong == 0) {
+           
+            printf("%-10s %-20s %-4.1f %-4.1f %-4.1f %-4.1f %-4.1f %-5.1f %-6.2f %-5s\n",
+                ds[i].maSV, ds[i].tenSV,
+                ds[i].lab1, ds[i].lab2,
+                ds[i].pt1, ds[i].pt2,
+                ds[i].presentation,
+                ds[i].finalTest,
+                ds[i].dtb,
+                ds[i].diemChu);
+        } else {
+            
+            printf("%-12s %-25s %-6.2f %-5s\n",
+                ds[i].maSV, ds[i].tenSV, ds[i].dtb, ds[i].diemChu);
+        }
+
+        
+        if (strcmp(ds[i].diemChu,"A")==0) demA++;
+        else if (strcmp(ds[i].diemChu,"B")==0) demB++;
+        else if (strcmp(ds[i].diemChu,"C")==0) demC++;
+        else if (strcmp(ds[i].diemChu,"D")==0) demD++;
+        else demF++;
+    }
+
+    printf("----------------------------------------------------------------------------------------------------------\n");
+
+    printf("\nTY LE XEP LOAI:\n");
+    printf("A: %.2f%% | B: %.2f%% | C: %.2f%% | D: %.2f%% | F: %.2f%%\n",
+        demA*100.0/n, demB*100.0/n, demC*100.0/n, demD*100.0/n, demF*100.0/n);
+    
+if (cheDoTong == 1) {
+    printf("\n===== DANH SACH HOC BONG =====\n");
+
+    SinhVien temp[MAX];
+    for (i = 0; i < n; i++) temp[i] = ds[i];
+
+    
+    int j;
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
+            if (temp[i].dtb < temp[j].dtb) {
+                SinhVien t = temp[i];
+                temp[i] = temp[j];
+                temp[j] = t;
+            }
+        }
+    }
+
+    int limit = n < 9 ? n : 9;
+
+    for (i = 0; i < limit; i++) {
+        char loaiHB;
+
+        if (i < 3) loaiHB = 'A';
+        else if (i < 6) loaiHB = 'B';
+        else loaiHB = 'C';
+
+        printf("%-12s %-25s DTB: %.2f | Hoc bong: %c\n",
+            temp[i].maSV, temp[i].tenSV, temp[i].dtb, loaiHB);
+    }
+}
+}
 void xemDiemChiTiet() {
     int i; char mssv[20];
     if (n == 0) { printf("\nDanh sach trong!\n"); return; }
@@ -198,6 +277,55 @@ void sua() {
     }
     printf("Khong tim thay!\n");
 }
+void tongHop3File() {
+    SinhVien toan[MAX], ly[MAX], hoa[MAX];
+    int nToan=0, nLy=0, nHoa=0;
+    int i, j;
+
+    
+    docFile("toan.txt");
+    nToan = n;
+    for(i=0;i<nToan;i++) toan[i] = ds[i];
+
+    docFile("ly.txt");
+    nLy = n;
+    for(i=0;i<nLy;i++) ly[i] = ds[i];
+
+    docFile("hoa.txt");
+    nHoa = n;
+    for(i=0;i<nHoa;i++) hoa[i] = ds[i];
+
+    
+    n = 0;
+
+    
+    for(i=0;i<nToan;i++){
+        for(j=0;j<nLy;j++){
+            if(strcmp(toan[i].maSV, ly[j].maSV)==0){
+                int k;
+                for(k=0;k<nHoa;k++){
+                    if(strcmp(toan[i].maSV, hoa[k].maSV)==0){
+
+                        strcpy(ds[n].maSV, toan[i].maSV);
+                        strcpy(ds[n].tenSV, toan[i].tenSV);
+
+                        
+                        ds[n].dtb = (toan[i].dtb + ly[j].dtb + hoa[k].dtb)/3;
+
+                      
+                        if (ds[n].dtb >= 8.5) strcpy(ds[n].diemChu, "A");
+                        else if (ds[n].dtb >= 7.0) strcpy(ds[n].diemChu, "B");
+                        else if (ds[n].dtb >= 5.5) strcpy(ds[n].diemChu, "C");
+                        else if (ds[n].dtb >= 4.0) strcpy(ds[n].diemChu, "D");
+                        else strcpy(ds[n].diemChu, "F");
+
+                        n++;
+                    }
+                }
+            }
+        }
+    }
+}
 int main() {
     char tenFile[50], choice;
     int i, j;
@@ -205,18 +333,58 @@ int main() {
     docFile(tenFile);
     do {
         printf("\n===== MENU (%s) [%s] =====\n", tenFile, isLocked ? "DA CHOT" : "MO");
-        printf("1. Nhap diem\n2. Xem danh sach\n3. Sua diem\n4. Sap xep\n5. Xem diem (MSSV)\n6. CHOT VINH VIEN\n7. Luu & Thoat\nChon: ");
+        printf("1. Nhap diem\n2. Xem danh sach\n3. Sua diem\n4. Sap xep\n5. Xem diem (MSSV)\n6. CHOT VINH VIEN\n7. Luu & Thoat\n8.Chuyen file\nChon: ");
         scanf(" %c", &choice); 
         switch (choice) {
             case '1': nhap(tenFile); break;
-            case '2': xemDanhSach(); break; 
+            case '2': {
+    char file[50];
+    chonFileXem(file);
+
+    if (strcmp(file, "tonghop") == 0) {
+        tongHop3File();
+        cheDoTong = 1;
+        xemDanhSach();
+        cheDoTong = 0;
+    } else {
+        docFile(file);
+        cheDoTong = 0;
+        xemDanhSach();
+    }
+    break;
+} 
             case '3': sua(); break;
-            case '4': 
-                for (i = 0; i < n - 1; i++) 
-                    for (j = i + 1; j < n; j++) 
-                        if (ds[i].dtb < ds[j].dtb) { SinhVien t = ds[i]; ds[i] = ds[j]; ds[j] = t; }
-                xemDanhSach(); break;
+            case '4': {
+    int kieu;
+    printf("\n1. Tang dan\n2. Giam dan\nChon: ");
+    scanf("%d", &kieu);
+    int i; 
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
+
+            if ((kieu == 1 && ds[i].dtb > ds[j].dtb) ||   
+                (kieu == 2 && ds[i].dtb < ds[j].dtb)) { 
+
+                SinhVien t = ds[i];
+                ds[i] = ds[j];
+                ds[j] = t;
+            }
+        }
+    }
+
+    xemDanhSach();
+    break;
+}
             case '5': xemDiemChiTiet(); break;
+            case '8': {
+    printf("\nNhap ten file muon chuyen sang: ");
+    scanf("%s", tenFile);
+
+    docFile(tenFile);
+
+    printf("\nDa chuyen sang file: %s\n", tenFile);
+    break;
+}
             case '7': ghiFile(tenFile); break;
             case '6': 
                 if (!isLocked) {
