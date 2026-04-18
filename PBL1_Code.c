@@ -16,7 +16,7 @@ typedef struct {
 
 SinhVien ds[MAX];
 int n = 0;
-int isLocked = 0; 
+int isLocked = 0; //ch?t đi?m 
 float wLab, wPT, wPre, wFinal;
 
 void tinhDiem(SinhVien *sv) {
@@ -57,11 +57,13 @@ void ghiFile(char tenFile[]) {
 void docFile(char tenFile[]) {
     FILE *fp = fopen(tenFile, "r");
     int len;
-    if (!fp) return;
-
+    if (!fp){
+		printf("file khong ton tai\n");
+		return;
+	}
     char line[200];
     if (fgets(line, sizeof(line), fp)) {
-        int count = sscanf(line, "%f %f %f %f %d", &wLab, &wPT, &wPre, &wFinal, &isLocked);
+        int count = sscanf(line, "%f %f %f %f %d", &wLab, &wPT, &wPre, &wFinal, &isLocked); //thi?u islocked là l?i
         if (count == 4) isLocked = 0;
         else if (count < 4) {
             wLab = 0.1; wPT = 0.1; wPre = 0.2; wFinal = 0.4; isLocked = 0;
@@ -69,7 +71,7 @@ void docFile(char tenFile[]) {
         }
     }
 
-    n = 0;
+    n = 0; //reset danh sách l?i t? đ?u
     while (n < MAX && fscanf(fp, "%s", ds[n].maSV) != EOF) {
         if (fscanf(fp, " %[^0-9]", ds[n].tenSV) != 1) break;
         len = strlen(ds[n].tenSV);
