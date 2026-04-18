@@ -19,6 +19,8 @@ int n = 0;
 int isLocked = 0; 
 float wLab, wPT, wPre, wFinal;
 
+bool docFile(char tenFile[]);
+
 void tinhDiem(SinhVien *sv) {
     sv->dtb = (sv->lab1 + sv->lab2) * wLab 
             + (sv->pt1 + sv->pt2) * wPT 
@@ -37,10 +39,11 @@ void chonFileXem(char tenFile[]) {
     printf("1. Toan\n2. Ly\n3. Hoa\n4. Tong hop\nChon: ");
     scanf("%d", &lc);
 
-    if (lc == 1) strcpy(tenFile, "toan.txt");
-    else if (lc == 2) strcpy(tenFile, "ly.txt");
-    else if (lc == 3) strcpy(tenFile, "hoa.txt");
+    if (lc == 1) strcpy(tenFile, "toan.dat");
+    else if (lc == 2) strcpy(tenFile, "ly.dat");
+    else if (lc == 3) strcpy(tenFile, "hoa.dat");
     else if (lc == 4) strcpy(tenFile, "tonghop"); 
+    docFile(tenFile);
 }
 void ghiFile(char tenFile[]) {
     FILE *fp = fopen(tenFile, "w"); 
@@ -220,14 +223,16 @@ void xemDiemChiTiet() {
     printf("\nNhap MSSV: "); scanf("%s", mssv);
     for (i = 0; i < n; i++) {
         if (strcmp(ds[i].maSV, mssv) == 0) {
-            printf("\n--- BANG DIEM CHI TIET ---");
-            printf("\nMSSV: %s | Ho ten: %s", ds[i].maSV, ds[i].tenSV);
-            printf("\nLab 1&2 (%.0f%% - %.0f%%): %.1f, %.1f", wLab*100, wLab*100, ds[i].lab1, ds[i].lab2);
-            printf("\nPT 1&2 (%.0f%% - %.0f%%):  %.1f, %.1f", wPT*100, wPT*100, ds[i].pt1, ds[i].pt2);
-            printf("\nPre (%.0f%%):     %.1f", wPre*100, ds[i].presentation);
-            printf("\nFinal (%.0f%%):   %.1f", wFinal*100, ds[i].finalTest);
-            printf("\n--------------------------");
-            printf("\nDIEM TRUNG BINH: %.2f | XEP LOAI: %s\n", ds[i].dtb, ds[i].diemChu);
+            printf("\n+------------------------------------------------------------------+");
+            printf("\n|                        BANG DIEM CHI TIET                        |");
+            printf("\n| MSSV: %-12s | Ho ten: %-35s |", ds[i].maSV, ds[i].tenSV);
+            printf("\n| Lab 1&2 (%-3.0f%% - %-3.0f%%): %-6.1f, %-6.1f                            |", wLab*100, wLab*100, ds[i].lab1, ds[i].lab2);
+            printf("\n| PT 1&2 (%-3.0f%% - %-3.0f%%):  %-6.1f, %-6.1f                            |", wPT*100, wPT*100, ds[i].pt1, ds[i].pt2);
+            printf("\n| Pre (%-3.0f%%):     %-6.1f                                           |", wPre*100, ds[i].presentation);
+            printf("\n| Final (%-3.0f%%):   %-6.1f                                           |", wFinal*100, ds[i].finalTest);
+            printf("\n|------------------------------------------------------------------|");
+            printf("\n| DIEM TRUNG BINH: %-6.2f | XEP LOAI: %-28s |", ds[i].dtb, ds[i].diemChu);
+            printf("\n+------------------------------------------------------------------+\n");
             return;
         }
     }
@@ -379,6 +384,8 @@ int main() {
                 cheDoTong = 0;
                 xemDanhSach();
             }
+            // Tai lai file chinh de tranh ghi de du lieu sai
+            docFile(tenFile);
             break;
         }
 
