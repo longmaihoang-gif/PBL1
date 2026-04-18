@@ -335,65 +335,74 @@ int main() {
         printf("\n===== MENU (%s) [%s] =====\n", tenFile, isLocked ? "DA CHOT" : "MO");
         printf("1. Nhap diem\n2. Xem danh sach\n3. Sua diem\n4. Sap xep\n5. Xem diem (MSSV)\n6. CHOT VINH VIEN\n7. Luu & Thoat\n8.Chuyen file\nChon: ");
         scanf(" %c", &choice); 
-        switch (choice) {
-            case '1': nhap(tenFile); break;
-            case '2': {
-    char file[50];
-    chonFileXem(file);
+    switch (choice) {
+        case '1': nhap(tenFile); break;
 
-    if (strcmp(file, "tonghop") == 0) {
-        tongHop3File();
-        cheDoTong = 1;
-        xemDanhSach();
-        cheDoTong = 0;
-    } else {
-        docFile(file);
-        cheDoTong = 0;
-        xemDanhSach();
-    }
-    break;
-} 
-            case '3': sua(); break;
-            case '4': {
-    int kieu;
-    printf("\n1. Tang dan\n2. Giam dan\nChon: ");
-    scanf("%d", &kieu);
-    int i; 
-    for (i = 0; i < n - 1; i++) {
-        for (j = i + 1; j < n; j++) {
+        case '2': {
+            char file[50];
+            chonFileXem(file);
 
-            if ((kieu == 1 && ds[i].dtb > ds[j].dtb) ||   
-                (kieu == 2 && ds[i].dtb < ds[j].dtb)) { 
-
-                SinhVien t = ds[i];
-                ds[i] = ds[j];
-                ds[j] = t;
+            if (strcmp(file, "tonghop") == 0) {
+                tongHop3File();
+                cheDoTong = 1;
+                xemDanhSach();
+                cheDoTong = 0;
+            } else {
+                docFile(file);
+                cheDoTong = 0;
+                xemDanhSach();
             }
+            break;
+        }
+
+        case '3': sua(); break;
+
+        case '4': {
+            int kieu;
+            printf("\n1. Tang dan\n2. Giam dan\nChon: ");
+            scanf("%d", &kieu);
+            int i; 
+            for (i = 0; i < n - 1; i++) {
+                for (j = i + 1; j < n; j++) {
+                    if ((kieu == 1 && ds[i].dtb > ds[j].dtb) ||   
+                        (kieu == 2 && ds[i].dtb < ds[j].dtb)) {
+                        SinhVien t = ds[i];
+                        ds[i] = ds[j];
+                        ds[j] = t;
+                    }
+                }
+            }
+            xemDanhSach();
+            break;
+        }
+
+        case '5': xemDiemChiTiet(); break;
+
+        case '6': 
+            if (!isLocked) {
+                printf("\nXac nhan CHOT? (y/n): ");
+                if (getch() == 'y') {
+                    isLocked = 1;
+                    ghiFile(tenFile);
+                    printf("\nChot diem thanh cong!\n");
+                } else printf("\nThao tac bi huy boi nguoi dung\n");
+            } else printf("\nDa chot roi!\n");
+            break;
+
+        case '7': 
+            ghiFile(tenFile); 
+            break;
+
+        case '8': {
+            printf("\nNhap ten file muon chuyen sang: ");
+            scanf("%s", tenFile);
+
+            docFile(tenFile);
+            printf("\nDa chuyen sang file: %s\n", tenFile);
+            break;
         }
     }
 
-    xemDanhSach();
-    break;
-}
-            case '5': xemDiemChiTiet(); break;
-            case '8': {
-    printf("\nNhap ten file muon chuyen sang: ");
-    scanf("%s", tenFile);
-
-    docFile(tenFile);
-
-    printf("\nDa chuyen sang file: %s\n", tenFile);
-    break;
-}
-            case '7': ghiFile(tenFile); break;
-            case '6': 
-                if (!isLocked) {
-                    printf("\nXac nhan CHOT? (y/n): ");
-                    if (getch() == 'y') { isLocked = 1; ghiFile(tenFile); printf("\nChot diem thanh cong!\n"); }
-                    else printf("\nThao tac bi huy boi nguoi dung\n");
-                } else printf("\nDa chot roi!\n");
-                break;
-        }
-    } while (choice != '7');
+} while (choice != '7');
     return 0;
 }
