@@ -16,7 +16,7 @@ typedef struct {
 
 SinhVien ds[MAX];
 int n = 0;
-int isLocked = 0; //ch?t đi?m 
+int isLocked = 0; 
 float wLab, wPT, wPre, wFinal;
 
 void tinhDiem(SinhVien *sv) {
@@ -54,16 +54,16 @@ void ghiFile(char tenFile[]) {
     fclose(fp);
 }
 
-void docFile(char tenFile[]) {
+bool docFile(char tenFile[]) {
     FILE *fp = fopen(tenFile, "r");
     int len;
     if (!fp){
-		printf("file khong ton tai\n");
-		return;
-	}
+        printf("file khong ton tai\n");
+        return false;
+    }
     char line[200];
     if (fgets(line, sizeof(line), fp)) {
-        int count = sscanf(line, "%f %f %f %f %d", &wLab, &wPT, &wPre, &wFinal, &isLocked); //thi?u islocked là l?i
+        int count = sscanf(line, "%f %f %f %f %d", &wLab, &wPT, &wPre, &wFinal, &isLocked);
         if (count == 4) isLocked = 0;
         else if (count < 4) {
             wLab = 0.1; wPT = 0.1; wPre = 0.2; wFinal = 0.4; isLocked = 0;
@@ -71,7 +71,7 @@ void docFile(char tenFile[]) {
         }
     }
 
-    n = 0; //reset danh sách l?i t? đ?u
+    n = 0;
     while (n < MAX && fscanf(fp, "%s", ds[n].maSV) != EOF) {
         if (fscanf(fp, " %[^0-9]", ds[n].tenSV) != 1) break;
         len = strlen(ds[n].tenSV);
@@ -83,6 +83,7 @@ void docFile(char tenFile[]) {
         }
     }
     fclose(fp);
+    return true;
 }
 void nhap(char tenFileChinh[]) {
     int i, j, n_cu, n1, trung;
@@ -127,19 +128,22 @@ void xemDanhSach() {
     int i;
     if (n == 0) { printf("\nDanh sach trong!\n"); return; }
 
-    printf("\nDANH SACH SINH VIEN\n");
-    printf("----------------------------------------------------------------------------------------------------------\n");
+    
 
     if (cheDoTong == 0) {
-        
-        printf("%-10s %-20s %-4s %-4s %-4s %-4s %-4s %-5s %-6s %-5s\n",
+        printf("\n                                          DANH SACH SINH VIEN\n");
+        printf("+-------------------------------------------------------------------------------------------------------------+\n");
+        printf("| %-12s| %-35s| %-5s| %-5s| %-5s| %-5s| %-5s| %-7s| %-6s| %-5s|\n",
             "MSSV", "Ho ten", "L1", "L2", "P1", "P2", "Pre", "Final", "DTB", "Loai");
+        printf("+-------------------------------------------------------------------------------------------------------------+\n");
     } else {
-        
-        printf("%-12s %-25s %-6s %-5s\n", "MSSV", "Ho va ten", "DTB", "Loai");
+        printf("\n                             DANH SACH SINH VIEN\n");
+        printf("+-------------------------------------------------------------------------------+\n");
+        printf("| %-12s| %-35s| %-15s| %-10s|\n", "MSSV", "Ho va ten", "DTB", "Loai");
+        printf("+-------------------------------------------------------------------------------+\n");
     }
 
-    printf("----------------------------------------------------------------------------------------------------------\n");
+    
 
     int demA=0, demB=0, demC=0, demD=0, demF=0;
 
@@ -147,7 +151,7 @@ void xemDanhSach() {
 
         if (cheDoTong == 0) {
            
-            printf("%-10s %-20s %-4.1f %-4.1f %-4.1f %-4.1f %-4.1f %-5.1f %-6.2f %-5s\n",
+            printf("| %-12s| %-35s| %-5.1f| %-5.1f| %-5.1f| %-5.1f| %-5.1f| %-7.1f| %-6.2f| %-5s|\n",
                 ds[i].maSV, ds[i].tenSV,
                 ds[i].lab1, ds[i].lab2,
                 ds[i].pt1, ds[i].pt2,
@@ -157,7 +161,7 @@ void xemDanhSach() {
                 ds[i].diemChu);
         } else {
             
-            printf("%-12s %-25s %-6.2f %-5s\n",
+            printf("| %-12s| %-35s| %-15.2f| %-10s|\n",
                 ds[i].maSV, ds[i].tenSV, ds[i].dtb, ds[i].diemChu);
         }
 
@@ -168,15 +172,18 @@ void xemDanhSach() {
         else if (strcmp(ds[i].diemChu,"D")==0) demD++;
         else demF++;
     }
-
-    printf("----------------------------------------------------------------------------------------------------------\n");
+    
+    if(cheDoTong == 0)
+    printf("+-------------------------------------------------------------------------------------------------------------+\n");
+    else
+    printf("+-------------------------------------------------------------------------------+\n");
 
     printf("\nTY LE XEP LOAI:\n");
     printf("A: %.2f%% | B: %.2f%% | C: %.2f%% | D: %.2f%% | F: %.2f%%\n",
         demA*100.0/n, demB*100.0/n, demC*100.0/n, demD*100.0/n, demF*100.0/n);
     
 if (cheDoTong == 1) {
-    printf("\n===== DANH SACH HOC BONG =====\n");
+    printf("\n                   *===== DANH SACH HOC BONG =====*\n\n");
 
     SinhVien temp[MAX];
     for (i = 0; i < n; i++) temp[i] = ds[i];
@@ -202,7 +209,7 @@ if (cheDoTong == 1) {
         else if (i < 6) loaiHB = 'B';
         else loaiHB = 'C';
 
-        printf("%-12s %-25s DTB: %.2f | Hoc bong: %c\n",
+        printf("| %-12s| %-25s| DTB: %-5.2f | Hoc bong: %c |\n",
             temp[i].maSV, temp[i].tenSV, temp[i].dtb, loaiHB);
     }
 }
@@ -328,16 +335,34 @@ void tongHop3File() {
         }
     }
 }
+void UI_Welcome() {
+    printf("______________________________________________________________________________________________________\n");
+    printf("|                                                                                                    |\n");
+    printf("|                                PBL 1: DO AN LAP TRINH TINH TOAN                                    |\n");
+    printf("|                                             NHOM: 5                                                |\n");
+    printf("|                                 DE TAI: QUAN LY DIEM SINH VIEN                                     |\n");
+    printf("|____________________________________________________________________________________________________|\n");
+    printf("\n                                                                      Chao mung ban da quay tro lai");
+    printf("\n");
+}
 int main() {
     char tenFile[50], choice;
     int i, j;
+    UI_Welcome();
     printf("Nhap ten file: "); scanf("%s", tenFile);
-    docFile(tenFile);
+    if(!docFile(tenFile)) return;
     do {
-        printf("\n===== MENU (%s) [%s] =====\n", tenFile, isLocked ? "DA CHOT" : "MO");
-        printf("1. Nhap diem\n2. Xem danh sach\n3. Sua diem\n4. Sap xep\n5. Xem diem (MSSV)\n6. CHOT VINH VIEN\n7. Luu & Thoat\n8.Chuyen file\nChon: ");
+        printf("\n");
+        printf("                       MENU (%s) [%s]\n", tenFile, isLocked ? "DA CHOT" : "MO");
+        printf("+----------------------------------------------------------------------+\n");
+        printf("|         1. Nhap diem                  2. Xem danh sach               |\n");
+        printf("|         3. Sua diem                   4. Sap xep                     |\n");
+        printf("|         5. Xem diem (MSSV)            6. CHOT VINH VIEN              |\n");
+        printf("|         7. Luu & Thoat                8. Chuyen file                 |\n");
+        printf("+----------------------------------------------------------------------+\n");
+        printf("   Nhap so de chon tinh nang: ");
         scanf(" %c", &choice); 
-    switch (choice) {
+        switch (choice) {
         case '1': nhap(tenFile); break;
 
         case '2': {
