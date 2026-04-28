@@ -438,7 +438,7 @@ void tongHop3File() {
 	        printf("|         1. Nhap diem                  2. Xem danh sach               |\n");
 	        printf("|         3. Sua diem                   4. Sap xep                     |\n");
 	        printf("|         5. Xem diem (MSSV)            6. CHOT VINH VIEN              |\n");
-	        printf("|         7. Luu & Thoat                                               |\n");
+	        printf("|         7. Thoat                                               |\n");
 	        printf("+----------------------------------------------------------------------+\n");
 	        printf("   Nhap so de chon tinh nang: ");
 	        scanf(" %c", &choice); 
@@ -509,8 +509,6 @@ void tongHop3File() {
 	    break;
 	
 	        case '7':
-	    chonFileLamViec(tenFile);
-	    ghiFile(tenFile);
 	    break; 
 	    }
 	
