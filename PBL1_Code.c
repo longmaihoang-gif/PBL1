@@ -19,6 +19,7 @@
 	float wLab, wPT, wPre, wFinal;
 	
 	bool docFile(char tenFile[]);
+	bool daCoDiem(SinhVien sv);
 	
 	void tinhDiem(SinhVien *sv) {
 	    sv->dtb = (sv->lab1 + sv->lab2) * wLab 
@@ -30,7 +31,8 @@
 	    else if (sv->dtb >= 7.0) strcpy(sv->diemChu, "B");
 	    else if (sv->dtb >= 5.5) strcpy(sv->diemChu, "C");
 	    else if (sv->dtb >= 4.0) strcpy(sv->diemChu, "D");
-	    else strcpy(sv->diemChu, "F");
+	    else if (daCoDiem(*sv)) strcpy(sv->diemChu, "F");
+		else strcpy(sv->diemChu, " ");
 	}
 	void chonFileXem(char tenFile[]) {
 	    int lc;
@@ -105,9 +107,9 @@ bool docFile(char tenFile[]) {
     return true;
 }
 bool daCoDiem(SinhVien sv) {
-    return sv.lab1 != 0 || sv.lab2 != 0 ||
-           sv.pt1 != 0 || sv.pt2 != 0 ||
-           sv.presentation != 0 || sv.finalTest != 0;
+    return sv.lab1 >= 0 && sv.lab2 >= 0 &&
+           sv.pt1 >= 0 && sv.pt2 >= 0 &&
+           sv.presentation >= 0 && sv.finalTest >= 0;
 }
 void nhap(char tenFileChinh[]) {
     int i;
@@ -199,32 +201,42 @@ void nhap(char tenFileChinh[]) {
 	
 	    
 	
-	    int demA=0, demB=0, demC=0, demD=0, demF=0;
+	    int demA=0, demB=0, demC=0, demD=0, demF=0, completed=0;
 	
 	    for (i = 0; i < n; i++) {
+
+			char sDTB[10];
+			if (!daCoDiem(ds[i])) strcpy(sDTB, "      "); else sprintf(sDTB, "%-6.2f", ds[i].dtb);
 	
 	        if (cheDoTong == 0) {
-	           
-	            printf("| %-12s| %-35s| %-5.1f| %-5.1f| %-5.1f| %-5.1f| %-5.1f| %-7.1f| %-6.2f| %-5s|\n",
-	                ds[i].maSV, ds[i].tenSV,
-	                ds[i].lab1, ds[i].lab2,
-	                ds[i].pt1, ds[i].pt2,
-	                ds[i].presentation,
-	                ds[i].finalTest,
-	                ds[i].dtb,
-	                ds[i].diemChu);
+
+				char sLab1[10], sLab2[10], sPt1[10], sPt2[10], sPre[10], sFinal[10];
+				if (ds[i].lab1 < 0) strcpy(sLab1, "     "); else sprintf(sLab1, "%-5.1f", ds[i].lab1);
+				if (ds[i].lab2 < 0) strcpy(sLab2, "     "); else sprintf(sLab2, "%-5.1f", ds[i].lab2);
+				if (ds[i].pt1 < 0) strcpy(sPt1, "     "); else sprintf(sPt1, "%-5.1f", ds[i].pt1);
+				if (ds[i].pt2 < 0) strcpy(sPt2, "     "); else sprintf(sPt2, "%-5.1f", ds[i].pt2);
+				if (ds[i].presentation < 0) strcpy(sPre, "     "); else sprintf(sPre, "%-5.1f", ds[i].presentation);
+				if (ds[i].finalTest < 0) strcpy(sFinal, "       "); else sprintf(sFinal, "%-7.1f", ds[i].finalTest);
+
+	            printf("| %-12s| %-35s| %s| %s| %s| %s| %s| %s| %s| %-5s|\n",
+                    ds[i].maSV, ds[i].tenSV, 
+                    sLab1, sLab2,
+					sPt1, sPt2,
+					sPre,
+					sFinal,
+                    sDTB, ds[i].diemChu);
 	        } else {
 	            
-	            printf("| %-12s| %-35s| %-15.2f| %-10s|\n",
-	                ds[i].maSV, ds[i].tenSV, ds[i].dtb, ds[i].diemChu);
+	            printf("| %-12s| %-35s| %-15s| %-10s|\n",
+	                ds[i].maSV, ds[i].tenSV, sDTB, daCoDiem(ds[i])? ds[i].diemChu: "");
 	        }
 	
 	        
-	        if (strcmp(ds[i].diemChu,"A")==0) demA++;
-	        else if (strcmp(ds[i].diemChu,"B")==0) demB++;
-	        else if (strcmp(ds[i].diemChu,"C")==0) demC++;
-	        else if (strcmp(ds[i].diemChu,"D")==0) demD++;
-	        else demF++;
+	        if (strcmp(ds[i].diemChu,"A")==0){demA++; completed++;}
+	        else if (strcmp(ds[i].diemChu,"B")==0){demB++; completed++;}	
+	        else if (strcmp(ds[i].diemChu,"C")==0){demC++; completed++;}
+	        else if (strcmp(ds[i].diemChu,"D")==0){demD++; completed++;}
+	        else if (strcmp(ds[i].diemChu,"F")==0 && daCoDiem(ds[i])) {demF++; completed++;}
 	    }
 	    
 	    if(cheDoTong == 0)
@@ -234,7 +246,7 @@ void nhap(char tenFileChinh[]) {
 	
 	    printf("\nTY LE XEP LOAI:\n");
 	    printf("A: %.2f%% | B: %.2f%% | C: %.2f%% | D: %.2f%% | F: %.2f%%\n",
-	        demA*100.0/n, demB*100.0/n, demC*100.0/n, demD*100.0/n, demF*100.0/n);
+	        completed? demA*100.0/completed: 0, completed? demB*100.0/completed: 0, completed? demC*100.0/completed: 0, completed? demD*100.0/completed: 0, completed? demF*100.0/completed: 0);
 	    
 	if (cheDoTong == 1) {
 	    printf("\n                   *===== DANH SACH HOC BONG =====*\n\n");
@@ -257,6 +269,8 @@ void nhap(char tenFileChinh[]) {
 	    int limit = n < 9 ? n : 9;
 	
 	    for (i = 0; i < limit; i++) {
+            if(temp[i].dtb < 0) break;
+
 	        char loaiHB;
 	
 	        if (i < 3) loaiHB = 'A';
@@ -274,15 +288,27 @@ void nhap(char tenFileChinh[]) {
 	    printf("\nNhap MSSV: "); scanf("%s", mssv);
 	    for (i = 0; i < n; i++) {
 	        if (strcmp(ds[i].maSV, mssv) == 0) {
+
+                bool Cohetdiem = daCoDiem(ds[i]);
+
+                char sLab1[10], sLab2[10], sPt1[10], sPt2[10], sPre[10], sFinal[10], sDTB[10];
+				if (ds[i].lab1 < 0) strcpy(sLab1, "      "); else sprintf(sLab1, "%-6.1f", ds[i].lab1);
+				if (ds[i].lab2 < 0) strcpy(sLab2, "      "); else sprintf(sLab2, "%-6.1f", ds[i].lab2);
+				if (ds[i].pt1 < 0) strcpy(sPt1, "      "); else sprintf(sPt1, "%-6.1f", ds[i].pt1);
+				if (ds[i].pt2 < 0) strcpy(sPt2, "      "); else sprintf(sPt2, "%-6.1f", ds[i].pt2);
+				if (ds[i].presentation < 0) strcpy(sPre, "      "); else sprintf(sPre, "%-6.1f", ds[i].presentation);
+				if (ds[i].finalTest < 0) strcpy(sFinal, "      "); else sprintf(sFinal, "%-6.1f", ds[i].finalTest);
+				if (!Cohetdiem) strcpy(sDTB, "      "); else sprintf(sDTB, "%-6.2f", ds[i].dtb);
+
 	            printf("\n+------------------------------------------------------------------+");
 	            printf("\n|                        BANG DIEM CHI TIET                        |");
 	            printf("\n| MSSV: %-12s | Ho ten: %-35s |", ds[i].maSV, ds[i].tenSV);
-	            printf("\n| Lab 1&2 (%-3.0f%% - %-3.0f%%): %-6.1f, %-6.1f                            |", wLab*100, wLab*100, ds[i].lab1, ds[i].lab2);
-	            printf("\n| PT 1&2 (%-3.0f%% - %-3.0f%%):  %-6.1f, %-6.1f                            |", wPT*100, wPT*100, ds[i].pt1, ds[i].pt2);
-	            printf("\n| Pre (%-3.0f%%):     %-6.1f                                           |", wPre*100, ds[i].presentation);
-	            printf("\n| Final (%-3.0f%%):   %-6.1f                                           |", wFinal*100, ds[i].finalTest);
+	            printf("\n| Lab 1&2 (%-3.0f%% - %-3.0f%%): %s, %s                            |", wLab*100, wLab*100, sLab1, sLab2);
+	            printf("\n| PT 1&2 (%-3.0f%% - %-3.0f%%):  %s, %s                            |", wPT*100, wPT*100, sPt1, sPt2);
+	            printf("\n| Pre (%-3.0f%%):     %s                                           |", wPre*100, sPre);
+	            printf("\n| Final (%-3.0f%%):   %s                                           |", wFinal*100, sFinal);
 	            printf("\n|------------------------------------------------------------------|");
-	            printf("\n| DIEM TRUNG BINH: %-6.2f | XEP LOAI: %-28s |", ds[i].dtb, ds[i].diemChu);
+	            printf("\n| DIEM TRUNG BINH: %s | XEP LOAI: %-28s |", sDTB, ds[i].diemChu);
 	            printf("\n+------------------------------------------------------------------+\n");
 	            return;
 	        }
@@ -428,7 +454,8 @@ void tongHop3File() {
 	    docFile(tenFile);
 	}
 	int main() {
-	    char tenFile[50], choice;
+	    char tenFile[50] = "";
+		char choice;
 	    int i, j;
 	    UI_Welcome();
 	    do {
@@ -438,7 +465,7 @@ void tongHop3File() {
 	        printf("|         1. Nhap diem                  2. Xem danh sach               |\n");
 	        printf("|         3. Sua diem                   4. Sap xep                     |\n");
 	        printf("|         5. Xem diem (MSSV)            6. CHOT VINH VIEN              |\n");
-	        printf("|         7. Thoat                                               |\n");
+	        printf("|         7. Thoat                                                     |\n");
 	        printf("+----------------------------------------------------------------------+\n");
 	        printf("   Nhap so de chon tinh nang: ");
 	        scanf(" %c", &choice); 
