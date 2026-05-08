@@ -164,7 +164,7 @@ void nhap(char tenFileChinh[]) {
        
         if (i < n - 1) {
             int tiepTuc;
-            printf("  => Nhap [-2] de DUNG & LUU | Nhap [-3] de TIEP TUC: ");
+            printf("  => Nhap [-2] de DUNG | Nhap [-3] de TIEP TUC: ");
             scanf("%d", &tiepTuc);
             if (tiepTuc == -2) break;
            
