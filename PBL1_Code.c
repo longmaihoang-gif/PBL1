@@ -586,6 +586,81 @@ void tongHop3File() {
 	
 	    docFile(tenFile);
 	}
+	void tangMaSV(char ma[]) {
+    int len = strlen(ma);
+    int i = len - 1;
+
+    while (i >= 0) {
+        if (ma[i] >= '0' && ma[i] <= '8') {
+            ma[i]++;
+            return;
+        }
+        else if (ma[i] == '9') {
+            ma[i] = '0';
+            i--;
+        }
+        else {
+            return;
+        }
+    }
+
+    /* Neu tat ca deu la 9 -> them 1 o dau */
+    char temp[20];
+    strcpy(temp, ma);
+
+    ma[0] = '1';
+    strcpy(ma + 1, temp);
+}
+void themSinhVien() {
+    char tenMoi[50];
+
+    printf("\nNhap ten sinh vien moi: ");
+
+    getchar(); 
+    fgets(tenMoi, sizeof(tenMoi), stdin);
+    tenMoi[strcspn(tenMoi, "\n")] = '\0';
+
+    char files[][20] = {"toan.dat", "ly.dat", "hoa.dat"};
+
+    int f;
+
+    for (f = 0; f < 3; f++) {
+
+        docFile(files[f]);
+
+        if (n >= MAX) {
+            printf("\n[!] File %s da day!\n", files[f]);
+            continue;
+        }
+
+        /* Tao MSSV moi */
+        if (n == 0) {
+            strcpy(ds[n].maSV, "10225000001");
+        } else {
+            strcpy(ds[n].maSV, ds[n - 1].maSV);
+            tangMaSV(ds[n].maSV);
+        }
+
+        strcpy(ds[n].tenSV, tenMoi);
+
+        /* Mac dinh chua co diem */
+        ds[n].lab1 = -1;
+        ds[n].lab2 = -1;
+        ds[n].pt1 = -1;
+        ds[n].pt2 = -1;
+        ds[n].presentation = -1;
+        ds[n].finalTest = -1;
+
+        ds[n].dtb = -1;
+        strcpy(ds[n].diemChu, " ");
+
+        n++;
+
+        ghiFile(files[f]);
+    }
+
+    printf("\nDa them sinh vien vao ca 3 file thanh cong!\n");
+}
 	int main() {
 	    char tenFile[50] = "";
 		char choice;
@@ -605,8 +680,8 @@ void tongHop3File() {
 	        printf("+----------------------------------------------------------------------+\n");
 	        printf("|         1. Nhap diem                  2. Xem danh sach               |\n");
 	        printf("|         3. Sua diem                   4. Sap xep                     |\n");
-	        printf("|         5. Xem diem (MSSV)            6. CHOT COT DIEM               |\n");
-	        printf("|         7. Thoat                                                     |\n");
+	        printf("|         5. Xem diem (MSSV)            6. Chot cot diem               |\n");
+	        printf("|         7. Them sinh vien             8.thoat                        |\n");
 	        printf("+----------------------------------------------------------------------+\n");
 	        printf("   Nhap so de chon tinh nang: ");
 	        scanf(" %c", &choice); 
@@ -731,10 +806,14 @@ void tongHop3File() {
 	    break;
 	}
 	
-	        case '7':
-	    break; 
+	       case '7':
+    themSinhVien();
+    break;
+
+          case '8':
+    break;
 	    }
 	
-	} while (choice != '7');
+	} while (choice != '8');
 	    return 0;
 	}
