@@ -7,6 +7,7 @@
 	int cheDoTong = 0;
 	typedef struct {
 	    char maSV[20];
+	    char lop[20];
 	    char tenSV[50];
 	    float lab1, lab2, pt1, pt2, presentation, finalTest;
 	    float dtb;
@@ -15,7 +16,7 @@
 	
 	SinhVien ds[MAX];
 	int n = 0;
-	int colLocked[6] = {0, 0, 0, 0, 0, 0}; /* Lab1, Lab2, PT1, PT2, Pre, Final */
+	int colLocked[6] = {0, 0, 0, 0, 0, 0};
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
 	
@@ -55,8 +56,9 @@
     fprintf(fp, "%f %f %f %f %d %d %d %d %d %d\n", wLab, wPT, wPre, wFinal, colLocked[0], colLocked[1], colLocked[2], colLocked[3], colLocked[4], colLocked[5]);
     
     for (i = 0; i < n; i++) {
-        fprintf(fp, "%s %s %f %f %f %f %f %f\n", 
-                ds[i].maSV, 
+        fprintf(fp, "%s %s %s %f %f %f %f %f %f\n", 
+                ds[i].maSV,
+				ds[i].lop, 
                 ds[i].tenSV, 
                 ds[i].lab1, ds[i].lab2, 
                 ds[i].pt1, ds[i].pt2, 
@@ -87,8 +89,9 @@ bool docFile(char tenFile[]) {
         if (strlen(line) < 5) continue;
 
        
-        int check = sscanf(line, "%19s %[^0-9.-] %f %f %f %f %f %f", 
-                           ds[n].maSV, 
+        int check = sscanf(line, "%19s %19s %[^0-9.-] %f %f %f %f %f %f", 
+                           ds[n].maSV,
+						   ds[n].lop, 
                            ds[n].tenSV, 
                            &ds[n].lab1, &ds[n].lab2, 
                            &ds[n].pt1, &ds[n].pt2, 
@@ -135,7 +138,7 @@ int cotCoDuDiem(int colIndex) {
 void nhapTheoCot(float *diemCot, int indexSV, char tenCot[], int needFlush) {
     char buf[50];
     int ch;
-    /* Flush stdin chi khi can (lan dau sau scanf) */
+    
     if (needFlush) {
         while ((ch = getchar()) != '\n' && ch != EOF);
     }
@@ -146,7 +149,7 @@ void nhapTheoCot(float *diemCot, int indexSV, char tenCot[], int needFlush) {
     printf(") -> ");
     
     fgets(buf, sizeof(buf), stdin);
-    /* Xoa ky tu xuong dong */
+    
     buf[strcspn(buf, "\r\n")] = '\0';
     
     if (strlen(buf) == 0) {
@@ -155,7 +158,7 @@ void nhapTheoCot(float *diemCot, int indexSV, char tenCot[], int needFlush) {
     }
     
     if (strcmp(buf, "-2") == 0) {
-        *diemCot = -999; /* Signal dung som */
+        *diemCot = -999;
         return;
     }
     
@@ -278,108 +281,95 @@ void nhap(char tenFileChinh[]) {
         printf("\nDa huy luu.\n");
     }
 }
-	void xemDanhSach() {
-	    int i;
-	    if (n == 0) { printf("\nDanh sach trong!\n"); return; }
-	
-	    
-	
-	    if (cheDoTong == 0) {
-	        printf("\n                                          DANH SACH SINH VIEN\n");
-	        printf("+-------------------------------------------------------------------------------------------------------------+\n");
-	        printf("| %-12s| %-35s| %-5s| %-5s| %-5s| %-5s| %-5s| %-7s| %-6s| %-5s|\n",
-	            "MSSV", "Ho ten", "L1", "L2", "P1", "P2", "Pre", "Final", "DTB", "Loai");
-	        printf("+-------------------------------------------------------------------------------------------------------------+\n");
-	    } else {
-	        printf("\n                             DANH SACH SINH VIEN\n");
-	        printf("+-------------------------------------------------------------------------------+\n");
-	        printf("| %-12s| %-35s| %-15s| %-10s|\n", "MSSV", "Ho va ten", "DTB", "Loai");
-	        printf("+-------------------------------------------------------------------------------+\n");
-	    }
-	
-	    
-	
-	    int demA=0, demB=0, demC=0, demD=0, demF=0, completed=0;
-	
-	    for (i = 0; i < n; i++) {
+void xemDanhSach() {
+    int i;
+    if (n == 0) { printf("\nDanh sach trong!\n"); return; }
 
-			char sDTB[10];
-			if (!daCoDiem(ds[i])) strcpy(sDTB, "      "); else sprintf(sDTB, "%-6.2f", ds[i].dtb);
-	
-	        if (cheDoTong == 0) {
+    if (cheDoTong == 0) {
+        printf("\n                                              DANH SACH SINH VIEN\n");
+        printf("+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
+        printf("| %-12s| %-12s| %-34s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-5s|\n",
+               "MSSV", "LOP", "Ho va ten", "Lab1", "Lab2", "PT1", "PT2", "Pre", "Final", "DTB", "Loai");
+        printf("+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
+    } else {
+        printf("\n                               DANH SACH TONG HOP\n");
+        printf("+-------------+-------------+-----------------------------------+---------------+----------+\n");
+        printf("| %-12s| %-12s| %-34s| %-14s| %-9s|\n", "MSSV", "LOP", "Ho va ten", "DTB", "Loai");
+        printf("+-------------+-------------+-----------------------------------+---------------+----------+\n");
+    }
 
-				char sLab1[10], sLab2[10], sPt1[10], sPt2[10], sPre[10], sFinal[10];
-				if (ds[i].lab1 < 0) strcpy(sLab1, "     "); else sprintf(sLab1, "%-5.1f", ds[i].lab1);
-				if (ds[i].lab2 < 0) strcpy(sLab2, "     "); else sprintf(sLab2, "%-5.1f", ds[i].lab2);
-				if (ds[i].pt1 < 0) strcpy(sPt1, "     "); else sprintf(sPt1, "%-5.1f", ds[i].pt1);
-				if (ds[i].pt2 < 0) strcpy(sPt2, "     "); else sprintf(sPt2, "%-5.1f", ds[i].pt2);
-				if (ds[i].presentation < 0) strcpy(sPre, "     "); else sprintf(sPre, "%-5.1f", ds[i].presentation);
-				if (ds[i].finalTest < 0) strcpy(sFinal, "       "); else sprintf(sFinal, "%-7.1f", ds[i].finalTest);
+    int demA = 0, demB = 0, demC = 0, demD = 0, demF = 0, completed = 0;
 
-	            printf("| %-12s| %-35s| %s| %s| %s| %s| %s| %s| %s| %-5s|\n",
-                    ds[i].maSV, ds[i].tenSV, 
-                    sLab1, sLab2,
-					sPt1, sPt2,
-					sPre,
-					sFinal,
-                    sDTB, ds[i].diemChu);
-	        } else {
-	            
-	            printf("| %-12s| %-35s| %-15s| %-10s|\n",
-	                ds[i].maSV, ds[i].tenSV, sDTB, daCoDiem(ds[i])? ds[i].diemChu: "");
-	        }
-	
-	        
-	        if (strcmp(ds[i].diemChu,"A")==0){demA++; completed++;}
-	        else if (strcmp(ds[i].diemChu,"B")==0){demB++; completed++;}	
-	        else if (strcmp(ds[i].diemChu,"C")==0){demC++; completed++;}
-	        else if (strcmp(ds[i].diemChu,"D")==0){demD++; completed++;}
-	        else if (strcmp(ds[i].diemChu,"F")==0 && daCoDiem(ds[i])) {demF++; completed++;}
-	    }
-	    
-	    if(cheDoTong == 0)
-	    printf("+-------------------------------------------------------------------------------------------------------------+\n");
-	    else
-	    printf("+-------------------------------------------------------------------------------+\n");
-	
-	    printf("\nTY LE XEP LOAI:\n");
-	    printf("A: %.2f%% | B: %.2f%% | C: %.2f%% | D: %.2f%% | F: %.2f%%\n",
-	        completed? demA*100.0/completed: 0, completed? demB*100.0/completed: 0, completed? demC*100.0/completed: 0, completed? demD*100.0/completed: 0, completed? demF*100.0/completed: 0);
-	    
-	if (cheDoTong == 1) {
-	    printf("\n                   *===== DANH SACH HOC BONG =====*\n\n");
-	
-	    SinhVien temp[MAX];
-	    for (i = 0; i < n; i++) temp[i] = ds[i];
-	
-	    
-	    int j;
-	    for (i = 0; i < n - 1; i++) {
-	        for (j = i + 1; j < n; j++) {
-	            if (temp[i].dtb < temp[j].dtb) {
-	                SinhVien t = temp[i];
-	                temp[i] = temp[j];
-	                temp[j] = t;
-	            }
-	        }
-	    }
-	
-	    int limit = n < 9 ? n : 9;
-	
-	    for (i = 0; i < limit; i++) {
-            if(temp[i].dtb < 0) break;
+    for (i = 0; i < n; i++) {
+        char sDTB[10];
+        if (!daCoDiem(ds[i])) strcpy(sDTB, " "); else sprintf(sDTB, "%.2f", ds[i].dtb);
 
-	        char loaiHB;
-	
-	        if (i < 3) loaiHB = 'A';
-	        else if (i < 6) loaiHB = 'B';
-	        else loaiHB = 'C';
-	
-	        printf("| %-12s| %-25s| DTB: %-5.2f | Hoc bong: %c |\n",
-	            temp[i].maSV, temp[i].tenSV, temp[i].dtb, loaiHB);
-	    }
-	}
-	}
+        if (cheDoTong == 0) {
+            char sLab1[10], sLab2[10], sPt1[10], sPt2[10], sPre[10], sFinal[10];
+            if (ds[i].lab1 < 0) strcpy(sLab1, " "); else sprintf(sLab1, "%.1f", ds[i].lab1);
+            if (ds[i].lab2 < 0) strcpy(sLab2, " "); else sprintf(sLab2, "%.1f", ds[i].lab2);
+            if (ds[i].pt1 < 0) strcpy(sPt1, " "); else sprintf(sPt1, "%.1f", ds[i].pt1);
+            if (ds[i].pt2 < 0) strcpy(sPt2, " "); else sprintf(sPt2, "%.1f", ds[i].pt2);
+            if (ds[i].presentation < 0) strcpy(sPre, " "); else sprintf(sPre, "%.1f", ds[i].presentation);
+            if (ds[i].finalTest < 0) strcpy(sFinal, " "); else sprintf(sFinal, "%.1f", ds[i].finalTest);
+
+            
+            printf("| %-12s| %-12s| %-34s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-5s|\n",
+                   ds[i].maSV, ds[i].lop, ds[i].tenSV, sLab1, sLab2, sPt1, sPt2, sPre, sFinal, sDTB, ds[i].diemChu);
+        } else {
+            printf("| %-12s| %-12s| %-34s| %-14s| %-9s|\n",
+                   ds[i].maSV, ds[i].lop, ds[i].tenSV, sDTB, daCoDiem(ds[i]) ? ds[i].diemChu : " ");
+        }
+
+        if (strcmp(ds[i].diemChu, "A") == 0) { demA++; completed++; }
+        else if (strcmp(ds[i].diemChu, "B") == 0) { demB++; completed++; }    
+        else if (strcmp(ds[i].diemChu, "C") == 0) { demC++; completed++; }
+        else if (strcmp(ds[i].diemChu, "D") == 0) { demD++; completed++; }
+        else if (strcmp(ds[i].diemChu, "F") == 0 && daCoDiem(ds[i])) { demF++; completed++; }
+    }
+    
+    if (cheDoTong == 0)
+        printf("+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
+    else
+        printf("+-------------+-------------+-----------------------------------+---------------+----------+\n");
+
+    printf("\nTY LE XEP LOAI:\n");
+    printf("A: %.2f%% | B: %.2f%% | C: %.2f%% | D: %.2f%% | F: %.2f%%\n",
+           completed ? demA * 100.0 / completed : 0, completed ? demB * 100.0 / completed : 0, 
+           completed ? demC * 100.0 / completed : 0, completed ? demD * 100.0 / completed : 0, 
+           completed ? demF * 100.0 / completed : 0);
+    
+    if (cheDoTong == 1) {
+        printf("\n                    *===== DANH SACH HOC BONG =====*\n\n");
+    
+        SinhVien temp[MAX];
+        for (i = 0; i < n; i++) temp[i] = ds[i];
+    
+        int j;
+        for (i = 0; i < n - 1; i++) {
+            for (j = i + 1; j < n; j++) {
+                if (temp[i].dtb < temp[j].dtb) {
+                    SinhVien t = temp[i];
+                    temp[i] = temp[j];
+                    temp[j] = t;
+                }
+            }
+        }
+    
+        int limit = n < 9 ? n : 9;
+    
+        for (i = 0; i < limit; i++) {
+            if (temp[i].dtb < 0) break;
+            char loaiHB;
+            if (i < 3) loaiHB = 'A';
+            else if (i < 6) loaiHB = 'B';
+            else loaiHB = 'C';
+    
+            printf("| %-12s| %-12s| %-25s| DTB: %-5.2f | Hoc bong: %c |\n",
+                   temp[i].maSV, temp[i].lop, temp[i].tenSV, temp[i].dtb, loaiHB);
+        }
+    }
+}
 	void xemDiemChiTiet() {
 	    int i; char mssv[20];
 	    if (n == 0) { printf("\nDanh sach trong!\n"); return; }
@@ -398,16 +388,16 @@ void nhap(char tenFileChinh[]) {
 				if (ds[i].finalTest < 0) strcpy(sFinal, "      "); else sprintf(sFinal, "%-6.1f", ds[i].finalTest);
 				if (!Cohetdiem) strcpy(sDTB, "      "); else sprintf(sDTB, "%-6.2f", ds[i].dtb);
 
-	            printf("\n+------------------------------------------------------------------+");
+	            printf("+--------------------------------------------------------------------------------------------------------------------------------------------+\n");
 	            printf("\n|                        BANG DIEM CHI TIET                        |");
-	            printf("\n| MSSV: %-12s | Ho ten: %-35s |", ds[i].maSV, ds[i].tenSV);
+	            printf("\n| MSSV: %-12s | LOP: %-12s | Ho ten: %-35s                         |",ds[i].maSV,ds[i].lop,ds[i].tenSV);
 	            printf("\n| Lab 1&2 (%-3.0f%% - %-3.0f%%): %s, %s                            |", wLab*100, wLab*100, sLab1, sLab2);
 	            printf("\n| PT 1&2 (%-3.0f%% - %-3.0f%%):  %s, %s                            |", wPT*100, wPT*100, sPt1, sPt2);
 	            printf("\n| Pre (%-3.0f%%):     %s                                           |", wPre*100, sPre);
 	            printf("\n| Final (%-3.0f%%):   %s                                           |", wFinal*100, sFinal);
 	            printf("\n|------------------------------------------------------------------|");
 	            printf("\n| DIEM TRUNG BINH: %s | XEP LOAI: %-28s |", sDTB, ds[i].diemChu);
-	            printf("\n+------------------------------------------------------------------+\n");
+	            printf("+--------------------------------------------------------------------------------------------------------------------------------------------+\n");
 	            return;
 	        }
 	    }
@@ -604,7 +594,7 @@ void tongHop3File() {
         }
     }
 
-    /* Neu tat ca deu la 9 -> them 1 o dau */
+   
     char temp[20];
     strcpy(temp, ma);
 
@@ -613,10 +603,14 @@ void tongHop3File() {
 }
 void themSinhVien() {
     char tenMoi[50];
+    char lop[50];
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF);
+    printf("\nNhap lop: ");
+    fgets(lop, sizeof(lop), stdin);
+    lop[strcspn(lop, "\n")] = '\0';
 
-    printf("\nNhap ten sinh vien moi: ");
-
-    getchar(); 
+    printf("Nhap ten sinh vien moi: ");
     fgets(tenMoi, sizeof(tenMoi), stdin);
     tenMoi[strcspn(tenMoi, "\n")] = '\0';
 
@@ -633,7 +627,7 @@ void themSinhVien() {
             continue;
         }
 
-        /* Tao MSSV moi */
+        
         if (n == 0) {
             strcpy(ds[n].maSV, "10225000001");
         } else {
@@ -641,9 +635,11 @@ void themSinhVien() {
             tangMaSV(ds[n].maSV);
         }
 
+        
         strcpy(ds[n].tenSV, tenMoi);
+        strcpy(ds[n].lop, lop);
 
-        /* Mac dinh chua co diem */
+     
         ds[n].lab1 = -1;
         ds[n].lab2 = -1;
         ds[n].pt1 = -1;
@@ -715,24 +711,92 @@ void themSinhVien() {
 	    break;
 	
 	        case '4': {
-	        	chonFileLamViec(tenFile); 
-	            int kieu;
-	            printf("\n1. Tang dan\n2. Giam dan\nChon: ");
-	            scanf("%d", &kieu);
-	            int i; 
-	            for (i = 0; i < n - 1; i++) {
-	                for (j = i + 1; j < n; j++) {
-	                    if ((kieu == 1 && ds[i].dtb > ds[j].dtb) ||   
-	                        (kieu == 2 && ds[i].dtb < ds[j].dtb)) {
-	                        SinhVien t = ds[i];
-	                        ds[i] = ds[j];
-	                        ds[j] = t;
-	                    }
-	                }
-	            }
-	            xemDanhSach();
-	            break;
-	        }
+           
+            if (n == 0) {
+                printf("\n[!] RAM chua co du lieu. Vui long chon file de nap du lieu truoc!\n");
+                chonFileLamViec(tenFile); 
+            }
+
+          
+            if (n == 0) {
+                printf("\nDanh sach trong hoac file khong co du lieu! Khong the sap xep.\n");
+                break;
+            }
+
+           
+            int tieuChi, kieu;
+            printf("\n===== CHON TIEU CHI SAP XEP =====\n");
+            printf("1. Sap xep theo Ma so sinh vien (MSSV)\n");
+            printf("2. Sap xep theo Ten sinh vien\n");
+            printf("3. Sap xep theo Lop\n");
+            printf("4. Sap xep theo Diem trung binh (DTB)\n");
+            printf("Chon tieu chi (1-4): ");
+            scanf("%d", &tieuChi);
+
+            if (tieuChi < 1 || tieuChi > 4) {
+                printf("[!] Tieu chi khong hop le!\n");
+                break;
+            }
+
+            printf("\n1. Tang dan\n2. Giam dan\nChon kieu (1-2): ");
+            scanf("%d", &kieu);
+
+            if (kieu < 1 || kieu > 2) {
+                printf("[!] Kieu sap xep khong hop le!\n");
+                break;
+            }
+
+  
+            for (i = 0; i < n - 1; i++) {
+                for (j = i + 1; j < n; j++) {
+                    bool canDoiCho = false;
+
+                    switch (tieuChi) {
+                        case 1: 
+                            if (kieu == 1 && strcmp(ds[i].maSV, ds[j].maSV) > 0) canDoiCho = true;
+                            if (kieu == 2 && strcmp(ds[i].maSV, ds[j].maSV) < 0) canDoiCho = true;
+                            break;
+
+                        case 2: 
+                            if (kieu == 1 && strcmp(ds[i].tenSV, ds[j].tenSV) > 0) canDoiCho = true;
+                            if (kieu == 2 && strcmp(ds[i].tenSV, ds[j].tenSV) < 0) canDoiCho = true;
+                            break;
+
+                        case 3: 
+                            if (kieu == 1 && strcmp(ds[i].lop, ds[j].lop) > 0) canDoiCho = true;
+                            if (kieu == 2 && strcmp(ds[i].lop, ds[j].lop) < 0) canDoiCho = true;
+                            break;
+
+                        case 4: 
+                            if (kieu == 1 && ds[i].dtb > ds[j].dtb) canDoiCho = true;
+                            if (kieu == 2 && ds[i].dtb < ds[j].dtb) canDoiCho = true;
+                            break;
+                    }
+
+                    if (canDoiCho) {
+                        SinhVien t = ds[i];
+                        ds[i] = ds[j];
+                        ds[j] = t;
+                    }
+                }
+            }
+
+            printf("\n=> Da sap xep xong! Duoi day la danh sach sau khi sap xep:\n");
+            xemDanhSach(); 
+
+         
+            char cLuu;
+            printf("\nBan co muon luu thu tu sap xep moi nay vao file %s khong? (y/n): ", tenFile);
+            fflush(stdin); 
+            cLuu = getch();
+            if (cLuu == 'y' || cLuu == 'Y') {
+                ghiFile(tenFile); 
+                printf("\nDa luu thay doi thu tu vao file thanh cong!\n");
+            } else {
+                printf("\nChi hien thi tam thoi, khong thay doi trong file.\n");
+            }
+            break;
+        }
 	
 	        case '5':
 	    chonFileLamViec(tenFile);
