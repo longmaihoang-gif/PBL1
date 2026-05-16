@@ -5,6 +5,13 @@
 	#include <stdbool.h>
 	#define MAX 100
 	int cheDoTong = 0;
+
+	// Ham trich xuat ten cuoi (tu cuoi cung) trong ho ten day du
+	const char* layTenCuoi(const char *hoTen) {
+	    const char *p = strrchr(hoTen, ' ');
+	    if (p) return p + 1;
+	    return hoTen;
+	}
 	typedef struct {
 	    char maSV[20];
 	    char lop[20];
@@ -759,10 +766,13 @@ void themSinhVien() {
                             if (kieu == 2 && strcmp(ds[i].maSV, ds[j].maSV) < 0) canDoiCho = true;
                             break;
 
-                        case 2: 
-                            if (kieu == 1 && strcmp(ds[i].tenSV, ds[j].tenSV) > 0) canDoiCho = true;
-                            if (kieu == 2 && strcmp(ds[i].tenSV, ds[j].tenSV) < 0) canDoiCho = true;
+                        case 2: {
+                            int cmpTen = strcmp(layTenCuoi(ds[i].tenSV), layTenCuoi(ds[j].tenSV));
+                            if (cmpTen == 0) cmpTen = strcmp(ds[i].tenSV, ds[j].tenSV);
+                            if (kieu == 1 && cmpTen > 0) canDoiCho = true;
+                            if (kieu == 2 && cmpTen < 0) canDoiCho = true;
                             break;
+                        }
 
                         case 3: 
                             if (kieu == 1 && strcmp(ds[i].lop, ds[j].lop) > 0) canDoiCho = true;
