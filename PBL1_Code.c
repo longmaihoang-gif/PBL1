@@ -388,16 +388,16 @@ void xemDanhSach() {
 				if (ds[i].finalTest < 0) strcpy(sFinal, "      "); else sprintf(sFinal, "%-6.1f", ds[i].finalTest);
 				if (!Cohetdiem) strcpy(sDTB, "      "); else sprintf(sDTB, "%-6.2f", ds[i].dtb);
 
-	            printf("+--------------------------------------------------------------------------------------------------------------------------------------------+\n");
-	            printf("\n|                        BANG DIEM CHI TIET                        |");
-	            printf("\n| MSSV: %-12s | LOP: %-12s | Ho ten: %-35s                         |",ds[i].maSV,ds[i].lop,ds[i].tenSV);
-	            printf("\n| Lab 1&2 (%-3.0f%% - %-3.0f%%): %s, %s                            |", wLab*100, wLab*100, sLab1, sLab2);
-	            printf("\n| PT 1&2 (%-3.0f%% - %-3.0f%%):  %s, %s                            |", wPT*100, wPT*100, sPt1, sPt2);
-	            printf("\n| Pre (%-3.0f%%):     %s                                           |", wPre*100, sPre);
-	            printf("\n| Final (%-3.0f%%):   %s                                           |", wFinal*100, sFinal);
-	            printf("\n|------------------------------------------------------------------|");
-	            printf("\n| DIEM TRUNG BINH: %s | XEP LOAI: %-28s |", sDTB, ds[i].diemChu);
-	            printf("+--------------------------------------------------------------------------------------------------------------------------------------------+\n");
+	            printf("+--------------------------------------------------------------------------------+\n");
+	            printf("|                               BANG DIEM CHI TIET                               |\n");
+	            printf("| MSSV: %-13.13s | LOP: %-12.12s | Ho ten: %-28.28s |\n", ds[i].maSV, ds[i].lop, ds[i].tenSV);
+	            printf("| Lab 1&2 (%-3.0f%% - %-3.0f%%): %-6.6s, %-6.6s                                          |\n", wLab*100, wLab*100, sLab1, sLab2);
+	            printf("| PT 1&2  (%-3.0f%% - %-3.0f%%): %-6.6s, %-6.6s                                          |\n", wPT*100, wPT*100, sPt1, sPt2);
+	            printf("| Pre (%-3.0f%%):            %-6.6s                                                  |\n", wPre*100, sPre);
+	            printf("| Final (%-3.0f%%):          %-6.6s                                                  |\n", wFinal*100, sFinal);
+	            printf("|--------------------------------------------------------------------------------|\n");
+	            printf("| DIEM TRUNG BINH: %-6.6s | XEP LOAI: %-2.2s                                         |\n", sDTB, ds[i].diemChu);
+	            printf("+--------------------------------------------------------------------------------+\n");
 	            return;
 	        }
 	    }
@@ -602,6 +602,7 @@ void tongHop3File() {
     strcpy(ma + 1, temp);
 }
 void themSinhVien() {
+    do {
     char tenMoi[50];
     char lop[50];
     int ch;
@@ -655,7 +656,8 @@ void themSinhVien() {
         ghiFile(files[f]);
     }
 
-    printf("\nDa them sinh vien vao ca 3 file thanh cong!\n");
+    printf("\nDa them sinh vien vao ca 3 file thanh cong!\nNhan c de tiep tuc, nhan bat ky de dung");
+    } while (getch()=='c');
 }
 	int main() {
 	    char tenFile[50] = "";
