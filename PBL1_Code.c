@@ -666,62 +666,8 @@ void themSinhVien() {
     printf("\nDa them sinh vien vao ca 3 file thanh cong!\nNhan c de tiep tuc, nhan bat ky de dung");
     } while (getch()=='c');
 }
-	int main() {
-	    char tenFile[50] = "";
-		char choice;
-	    int i, j;
-	    UI_Welcome();
-	    do {
-	        printf("\n");
-	        printf("                       MENU (%s)\n", tenFile);
-	        if (strlen(tenFile) > 0) {
-	            int ci;
-	            printf("  Trang thai chot: ");
-	            for (ci = 0; ci < 6; ci++) {
-	                printf("%s:%s ", tenCotGlobal[ci], colLocked[ci] ? "CHOT" : "MO");
-	            }
-	            printf("\n");
-	        }
-	        printf("+----------------------------------------------------------------------+\n");
-	        printf("|         1. Nhap diem                  2. Xem danh sach               |\n");
-	        printf("|         3. Sua diem                   4. Sap xep                     |\n");
-	        printf("|         5. Xem diem (MSSV)            6. Chot cot diem               |\n");
-	        printf("|         7. Them sinh vien             8.thoat                        |\n");
-	        printf("+----------------------------------------------------------------------+\n");
-	        printf("   Nhap so de chon tinh nang: ");
-	        scanf(" %c", &choice); 
-	        switch (choice) {
-	        case '1':
-	    chonFileLamViec(tenFile);
-	    nhap(tenFile);
-	    break;
-	
-	       case '2': {
-	    char file[50];
-	    chonFileXem(file);
-	
-	    if (strcmp(file, "tonghop") == 0) {
-	        tongHop3File();
-	        cheDoTong = 1;
-	        xemDanhSach();
-	        cheDoTong = 0;
-	    } else {
-	        docFile(file);
-	        cheDoTong = 0;
-	        xemDanhSach();
-	    }
-	    break;
-	}
-	
-	        case '3':
-	    chonFileLamViec(tenFile);
-	    sua();
-	    ghiFile(tenFile);
-	    break;
-	
-	        case '4': {
-           
-            if (n == 0) {
+    void Sapxep (char tenFile[]) {
+        if (n == 0) {
                 printf("\n[!] RAM chua co du lieu. Vui long chon file de nap du lieu truoc!\n");
                 chonFileLamViec(tenFile); 
             }
@@ -729,11 +675,11 @@ void themSinhVien() {
           
             if (n == 0) {
                 printf("\nDanh sach trong hoac file khong co du lieu! Khong the sap xep.\n");
-                break;
+                return;
             }
 
            
-            int tieuChi, kieu;
+            int tieuChi, kieu, i, j;
             printf("\n===== CHON TIEU CHI SAP XEP =====\n");
             printf("1. Sap xep theo Ma so sinh vien (MSSV)\n");
             printf("2. Sap xep theo Ten sinh vien\n");
@@ -744,7 +690,7 @@ void themSinhVien() {
 
             if (tieuChi < 1 || tieuChi > 4) {
                 printf("[!] Tieu chi khong hop le!\n");
-                break;
+                return;
             }
 
             printf("\n1. Tang dan\n2. Giam dan\nChon kieu (1-2): ");
@@ -752,7 +698,7 @@ void themSinhVien() {
 
             if (kieu < 1 || kieu > 2) {
                 printf("[!] Kieu sap xep khong hop le!\n");
-                break;
+                return;
             }
 
   
@@ -807,20 +753,9 @@ void themSinhVien() {
             } else {
                 printf("\nChi hien thi tam thoi, khong thay doi trong file.\n");
             }
-            break;
-        }
-	
-	        case '5':
-	    chonFileLamViec(tenFile);
-	    xemDiemChiTiet();
-	    break;
-	
-	       case '6': {
-	    chonFileLamViec(tenFile);
-	    if (tatCaDaChot()) {
-	        printf("\nTat ca cot da chot roi!\n");
-	    } else {
-	        int lcChot;
+    }
+    void Chotcotdiem(char tenFile[]) {
+        	int lcChot;
 	        printf("\n===== CHOT COT DIEM =====\n");
 	        int ci;
 	        for (ci = 0; ci < 6; ci++) {
@@ -878,6 +813,75 @@ void themSinhVien() {
 	                }
 	            }
 	        }
+    }
+	int main() {
+	    char tenFile[50] = "";
+		char choice;
+	    UI_Welcome();
+	    do {
+	        printf("\n");
+	        printf("                       MENU (%s)\n", tenFile);
+	        if (strlen(tenFile) > 0) {
+	            int ci;
+	            printf("  Trang thai chot: ");
+	            for (ci = 0; ci < 6; ci++) {
+	                printf("%s:%s ", tenCotGlobal[ci], colLocked[ci] ? "CHOT" : "MO");
+	            }
+	            printf("\n");
+	        }
+	        printf("+----------------------------------------------------------------------+\n");
+	        printf("|         1. Nhap diem                  2. Xem danh sach               |\n");
+	        printf("|         3. Sua diem                   4. Sap xep                     |\n");
+	        printf("|         5. Xem diem (MSSV)            6. Chot cot diem               |\n");
+	        printf("|         7. Them sinh vien             8.thoat                        |\n");
+	        printf("+----------------------------------------------------------------------+\n");
+	        printf("   Nhap so de chon tinh nang: ");
+	        scanf(" %c", &choice); 
+	        switch (choice) {
+	        case '1':
+	    chonFileLamViec(tenFile);
+	    nhap(tenFile);
+	    break;
+	
+	       case '2': {
+	    char file[50];
+	    chonFileXem(file);
+	
+	    if (strcmp(file, "tonghop") == 0) {
+	        tongHop3File();
+	        cheDoTong = 1;
+	        xemDanhSach();
+	        cheDoTong = 0;
+	    } else {
+	        docFile(file);
+	        cheDoTong = 0;
+	        xemDanhSach();
+	    }
+	    break;
+	}
+	
+	        case '3':
+	    chonFileLamViec(tenFile);
+	    sua();
+	    ghiFile(tenFile);
+	    break;
+	
+	        case '4': {
+            Sapxep(tenFile);
+            break;
+        }
+	
+	        case '5':
+	    chonFileLamViec(tenFile);
+	    xemDiemChiTiet();
+	    break;
+	
+	       case '6': {
+	    chonFileLamViec(tenFile);
+	    if (tatCaDaChot()) {
+	        printf("\nTat ca cot da chot roi!\n");
+	    } else {
+            Chotcotdiem(tenFile);
 	    }
 	    break;
 	}
