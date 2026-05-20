@@ -56,68 +56,71 @@
 	    docFile(tenFile);
 	}
 	void ghiFile(char tenFile[]) {
-    FILE *fp = fopen(tenFile, "w"); 
-    int i;
-    if (!fp) return;
+        FILE *fp = fopen(tenFile, "w"); 
+        int i;
+        if (!fp) return;
     
-    fprintf(fp, "%f %f %f %f %d %d %d %d %d %d\n", wLab, wPT, wPre, wFinal, colLocked[0], colLocked[1], colLocked[2], colLocked[3], colLocked[4], colLocked[5]);
+        fprintf(fp, "%f %f %f %f %d %d %d %d %d %d\n", 
+                    wLab, wPT, wPre, wFinal,
+                    colLocked[0], colLocked[1], colLocked[2], colLocked[3], colLocked[4], colLocked[5]);
     
-    for (i = 0; i < n; i++) {
-        fprintf(fp, "%s %s %s %f %f %f %f %f %f\n", 
-                ds[i].maSV,
-				ds[i].lop, 
-                ds[i].tenSV, 
-                ds[i].lab1, ds[i].lab2, 
-                ds[i].pt1, ds[i].pt2, 
-                ds[i].presentation, 
-                ds[i].finalTest);
-    }
-    fclose(fp);
-}
-bool docFile(char tenFile[]) {
-    FILE *fp = fopen(tenFile, "r");
-    if (!fp) {
-        printf("File khong ton tai\n");
-        return false;
-    }
-
-    char line[256];
-   
-    if (fgets(line, sizeof(line), fp)) {
-        if (sscanf(line, "%f %f %f %f %d %d %d %d %d %d", &wLab, &wPT, &wPre, &wFinal, &colLocked[0], &colLocked[1], &colLocked[2], &colLocked[3], &colLocked[4], &colLocked[5]) < 4) {
-            wLab = 0.1; wPT = 0.1; wPre = 0.2; wFinal = 0.4;
-            int ci; for(ci=0;ci<6;ci++) colLocked[ci]=0;
-            rewind(fp); 
+        for (i = 0; i < n; i++) {
+            fprintf(fp, "%s %s %s %f %f %f %f %f %f\n", 
+                    ds[i].maSV,
+		    		ds[i].lop, 
+                    ds[i].tenSV, 
+                    ds[i].lab1, ds[i].lab2, 
+                    ds[i].pt1, ds[i].pt2, 
+                    ds[i].presentation, 
+                    ds[i].finalTest);
         }
+        fclose(fp);
     }
+    bool docFile(char tenFile[]) {
+        FILE *fp = fopen(tenFile, "r");
+        if (!fp) {
+            printf("File khong ton tai\n");
+            return false;
+        }
 
-    n = 0;
-    while (fgets(line, sizeof(line), fp) && n < MAX) {
-        if (strlen(line) < 5) continue;
+        char line[256];
 
-       
-        int check = sscanf(line, "%19s %19s %[^0-9.-] %f %f %f %f %f %f", 
-                           ds[n].maSV,
-						   ds[n].lop, 
-                           ds[n].tenSV, 
-                           &ds[n].lab1, &ds[n].lab2, 
-                           &ds[n].pt1, &ds[n].pt2, 
-                           &ds[n].presentation, &ds[n].finalTest);
+        if (fgets(line, sizeof(line), fp)) {
+          if (sscanf(line, "%f %f %f %f %d %d %d %d %d %d", 
+                            &wLab, &wPT, &wPre, &wFinal, 
+                            &colLocked[0], &colLocked[1], &colLocked[2], &colLocked[3], &colLocked[4], &colLocked[5]) < 4) {
+               wLab = 0.1; wPT = 0.1; wPre = 0.2; wFinal = 0.4;
+               int ci; for(ci=0;ci<6;ci++) colLocked[ci]=0;
+               rewind(fp); 
+          }
+        }
 
-        if (check >= 2) { 
-           
+        n = 0;
+
+        while (fgets(line, sizeof(line), fp) && n < MAX) {
+            if (strlen(line) < 5) continue;
+            int check = sscanf(line, "%19s %19s %[^0-9.-] %f %f %f %f %f %f", 
+                               ds[n].maSV,
+			    			   ds[n].lop, 
+                               ds[n].tenSV, 
+                               &ds[n].lab1, &ds[n].lab2, 
+                               &ds[n].pt1, &ds[n].pt2, 
+                               &ds[n].presentation, &ds[n].finalTest);
+
+            if (check >= 2) { 
             int len = strlen(ds[n].tenSV);
-            while(len > 0 && (ds[n].tenSV[len-1] == ' ' || ds[n].tenSV[len-1] == '\t' || ds[n].tenSV[len-1] == '\r' || ds[n].tenSV[len-1] == '\n')) {
+            while(len > 0 && (ds[n].tenSV[len-1] == ' ' || ds[n].tenSV[len-1] == '\t' || 
+                              ds[n].tenSV[len-1] == '\r' || ds[n].tenSV[len-1] == '\n')) {
                 ds[n].tenSV[--len] = '\0';
             }
-            
             tinhDiem(&ds[n]);
             n++;
+            }
         }
+        
+        fclose(fp);
+        return true;
     }
-    fclose(fp);
-    return true;
-}
 bool daCoDiem(SinhVien sv) {
     return sv.lab1 >= 0 && sv.lab2 >= 0 &&
            sv.pt1 >= 0 && sv.pt2 >= 0 &&
