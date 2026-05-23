@@ -508,39 +508,29 @@ void tongHop3File() {
     SinhVien toan[MAX], ly[MAX], hoa[MAX];
     int nToan = 0, nLy = 0, nHoa = 0;
     int i, j, k;
-
    
     if (docFile("toan.dat")) {
         nToan = n;
         for(i = 0; i < nToan; i++) toan[i] = ds[i];
     }
-
     if (docFile("ly.dat")) {
         nLy = n;
         for(i = 0; i < nLy; i++) ly[i] = ds[i];
     }
-
     if (docFile("hoa.dat")) {
         nHoa = n;
         for(i = 0; i < nHoa; i++) hoa[i] = ds[i];
     }
-
-    
     n = 0;
-
-    
     for(i = 0; i < nToan; i++) {
         for(j = 0; j < nLy; j++) {
             if(strcmp(toan[i].maSV, ly[j].maSV) == 0) {
                 for(k = 0; k < nHoa; k++) {
                     if(strcmp(toan[i].maSV, hoa[k].maSV) == 0) {
-                        
                         strcpy(ds[n].maSV, toan[i].maSV);
                         strcpy(ds[n].tenSV, toan[i].tenSV);
 
-                       
                         ds[n].dtb = (toan[i].dtb + ly[j].dtb + hoa[k].dtb) / 3.0;
-
                         
                         if (ds[n].dtb >= 8.5) strcpy(ds[n].diemChu, "A");
                         else if (ds[n].dtb >= 7.0) strcpy(ds[n].diemChu, "B");
@@ -553,8 +543,7 @@ void tongHop3File() {
                 }
             }
         }
-    }
-    
+    }   
     if (n == 0) {
         printf("\n[!] Khong tim thay sinh vien nao co du diem ca 3 mon de tong hop!\n");
     }
@@ -586,30 +575,27 @@ void tongHop3File() {
 	    docFile(tenFile);
 	}
 	void tangMaSV(char ma[]) {
-    int len = strlen(ma);
-    int i = len - 1;
+        int len = strlen(ma);
+        int i = len - 1;
 
-    while (i >= 0) {
-        if (ma[i] >= '0' && ma[i] <= '8') {
-            ma[i]++;
-            return;
+        while (i >= 0) {
+            if (ma[i] >= '0' && ma[i] <= '8') {
+                ma[i]++;
+                return;
+            }
+            else if (ma[i] == '9') {
+                ma[i] = '0';
+                i--;
+            }
+           else return;
         }
-        else if (ma[i] == '9') {
-            ma[i] = '0';
-            i--;
-        }
-        else {
-            return;
-        }
-    }
-
    
-    char temp[20];
-    strcpy(temp, ma);
+        char temp[20];
+         strcpy(temp, ma);
 
-    ma[0] = '1';
-    strcpy(ma + 1, temp);
-}
+        ma[0] = '1';
+        strcpy(ma + 1, temp);
+    }
 void themSinhVien() {
     do {
     char tenMoi[50];
