@@ -6,12 +6,6 @@
 	#define MAX 100
 	int cheDoTong = 0;
 
-	// Ham trich xuat ten cuoi (tu cuoi cung) trong ho ten day du
-	const char* layTenCuoi(const char *hoTen) {
-	    const char *p = strrchr(hoTen, ' ');
-	    if (p) return p + 1;
-	    return hoTen;
-	}
 	typedef struct {
 	    char maSV[20];
 	    char lop[20];
@@ -121,6 +115,11 @@
         fclose(fp);
         return true;
     }
+const char* layTenCuoi(const char *hoTen) {
+	const char *p = strrchr(hoTen, ' ');
+	if (p) return p + 1;
+	return hoTen;
+}
 bool daCoDiem(SinhVien sv) {
     return sv.lab1 >= 0 && sv.lab2 >= 0 &&
            sv.pt1 >= 0 && sv.pt2 >= 0 &&
