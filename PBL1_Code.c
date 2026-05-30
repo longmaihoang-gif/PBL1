@@ -1,4 +1,4 @@
-	#include <stdio.h>
+#include <stdio.h>
 	#include <string.h>
 	#include <stdlib.h>
 	#include <conio.h>
@@ -58,7 +58,7 @@
 	            + (sv->pt1 + sv->pt2) * wPT 
 	            + sv->presentation * wPre 
 	            + sv->finalTest * wFinal;
-	
+
 	    if (sv->dtb >= 8.5) strcpy(sv->diemChu, "A");
 	    else if (sv->dtb >= 7.0) strcpy(sv->diemChu, "B");
 	    else if (sv->dtb >= 5.5) strcpy(sv->diemChu, "C");
@@ -75,7 +75,7 @@
 	    }
 	    printf("%d. Tong hop\nChon: ", soMon + 1);
 	    scanf("%d", &lc);
-	
+
 	    if (lc >= 1 && lc <= soMon) {
 	        strcpy(tenFile, fileMon[lc - 1]);
 	    } else if (lc == soMon + 1) {
@@ -865,6 +865,161 @@ void themSinhVien() {
 	            }
 	        }
     }
+
+/* =====================================================================
+   TINH NANG MOI: THEM MON HOC
+   ===================================================================== */
+void themMonHoc() {
+    int ch, i;
+    char tenMon_new[30];
+    char duongDan[60];   /* Res/xxx.dat */
+    float wL, wP, wPre_new, wF;
+
+    /* --- flush stdin --- */
+    while ((ch = getchar()) != '\n' && ch != EOF);
+
+    printf("\n===== THEM MON HOC MOI =====\n");
+
+    /* 1. Nhap ten mon (khong khoang trang) */
+    printf("Nhap ten mon hoc (vd: Tin, Anh, ...): ");
+    fgets(tenMon_new, sizeof(tenMon_new), stdin);
+    tenMon_new[strcspn(tenMon_new, "\r\n")] = '\0';
+
+    if (strlen(tenMon_new) == 0) {
+        printf("[!] Ten mon khong duoc de trong!\n");
+        return;
+    }
+
+    /* Kiem tra ten bi trung */
+    for (i = 0; i < soMon; i++) {
+        if (strcmp(tenMon[i], tenMon_new) == 0) {
+            printf("[!] Mon '%s' da ton tai trong danh sach!\n", tenMon_new);
+            return;
+        }
+    }
+
+    if (soMon >= MAX_MON) {
+        printf("[!] Da dat toi da so mon hoc!\n");
+        return;
+    }
+
+    /* 2. Xay dung duong dan: Res/<tenMon_new>.dat (chu thuong) */
+    char tenLower[30];
+    strcpy(tenLower, tenMon_new);
+    for (i = 0; tenLower[i]; i++)
+        if (tenLower[i] >= 'A' && tenLower[i] <= 'Z')
+            tenLower[i] += 32;
+    sprintf(duongDan, "Res/%s.dat", tenLower);
+
+    /* 3. Kiem tra file da ton tai chua */
+    {
+        FILE *check = fopen(duongDan, "r");
+        if (check) {
+            fclose(check);
+            printf("[!] File '%s' da ton tai tren disk!\n", duongDan);
+            printf("    Ban co muon ghi de va dung file nay? (y/n): ");
+            ch = getch();
+            if (ch != 'y' && ch != 'Y') {
+                printf("\nDa huy.\n");
+                return;
+            }
+            printf("\n");
+        }
+    }
+
+    /* 4. Nhap trong so */
+    printf("\nNhap trong so (tong = 1.0):\n");
+    printf("  w_Lab  (moi lab, co 2 bai) : ");
+    scanf("%f", &wL);
+    printf("  w_PT   (moi PT,  co 2 bai) : ");
+    scanf("%f", &wP);
+    printf("  w_Pre  (Presentation)       : ");
+    scanf("%f", &wPre_new);
+    printf("  w_Final (Final Test)        : ");
+    scanf("%f", &wF);
+
+    float tong = wL * 2 + wP * 2 + wPre_new + wF;
+    printf("  => Tong kiem tra: %.2f (phai = 1.0)\n", tong);
+    if (tong < 0.99f || tong > 1.01f) {
+        printf("[!] Tong trong so != 1.0. Vui long nhap lai!\n");
+        return;
+    }
+
+    /* 5. Lay mau sinh vien tu file mon dau tien (neu co) */
+    /* Luu trong so hien tai de khoi phuc sau */
+    float wLab_bk = wLab, wPT_bk = wPT, wPre_bk = wPre, wFinal_bk = wFinal;
+    int   locked_bk[6];
+    int   n_bk = n;
+    SinhVien ds_bk[MAX];
+    memcpy(locked_bk, colLocked, sizeof(colLocked));
+    memcpy(ds_bk, ds, sizeof(ds));
+
+    int soSV_mau = 0;
+    SinhVien mau[MAX];
+
+    if (soMon > 0) {
+        /* Doc file dau tien de lay danh sach sinh vien */
+        if (docFile(fileMon[0])) {
+            soSV_mau = n;
+            memcpy(mau, ds, n * sizeof(SinhVien));
+        }
+    }
+
+    /* Khoi phuc global state */
+    wLab   = wLab_bk;
+    wPT    = wPT_bk;
+    wPre   = wPre_bk;
+    wFinal = wFinal_bk;
+    memcpy(colLocked, locked_bk, sizeof(colLocked));
+    n  = n_bk;
+    memcpy(ds, ds_bk, sizeof(ds));
+
+    /* 6. Tao file .dat moi */
+    {
+        FILE *fp = fopen(duongDan, "w");
+        if (!fp) {
+            printf("[!] Khong the tao file '%s'. Kiem tra thu muc Res/ da ton tai chua!\n", duongDan);
+            return;
+        }
+
+        /* Dong 1: trong so + chot (tat ca = 0) */
+        fprintf(fp, "%f %f %f %f 0 0 0 0 0 0\n", wL, wP, wPre_new, wF);
+
+        /* Dong tiep theo: copy sinh vien tu file mau, diem = -1 */
+        int si;
+        for (si = 0; si < soSV_mau; si++) {
+            fprintf(fp, "%s %s %s -1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000\n",
+                    mau[si].maSV,
+                    mau[si].lop,
+                    mau[si].tenSV);
+        }
+        fclose(fp);
+    }
+
+    /* 7. Cap nhat mang tenMon / fileMon trong bo nho */
+    strcpy(tenMon[soMon], tenMon_new);
+    strcpy(fileMon[soMon], duongDan);
+    soMon++;
+
+    /* 8. Ghi lai monhoc.txt */
+    {
+        FILE *fp = fopen("monhoc.txt", "w");
+        if (fp) {
+            for (i = 0; i < soMon; i++)
+                fprintf(fp, "%s %s\n", tenMon[i], fileMon[i]);
+            fclose(fp);
+        }
+    }
+
+    printf("\n[OK] Da tao mon hoc '%s':\n", tenMon_new);
+    printf("     File du lieu : %s\n", duongDan);
+    printf("     So sinh vien : %d (sao chep tu file mau, diem mac dinh -1)\n", soSV_mau);
+    printf("     Trong so     : Lab=%.2f PT=%.2f Pre=%.2f Final=%.2f\n",
+           wL, wP, wPre_new, wF);
+    printf("     monhoc.txt   : Da cap nhat.\n");
+}
+/* =================================================================== */
+
 	int main() {
 	    char tenFile[50] = "";
 		char choice;
@@ -885,7 +1040,8 @@ void themSinhVien() {
 	        printf("|         1. Nhap diem                  2. Xem danh sach               |\n");
 	        printf("|         3. Sua diem                   4. Sap xep                     |\n");
 	        printf("|         5. Xem diem (MSSV)            6. Chot cot diem               |\n");
-	        printf("|         7. Them sinh vien             8.thoat                        |\n");
+	        printf("|         7. Them sinh vien             8. Them mon hoc moi            |\n");
+	        printf("|         9. Thoat                                                     |\n");
 	        printf("+----------------------------------------------------------------------+\n");
 	        printf("   Nhap so de chon tinh nang: ");
 	        scanf(" %c", &choice); 
@@ -943,9 +1099,13 @@ void themSinhVien() {
     break;
 
           case '8':
+    themMonHoc();
+    break;
+
+          case '9':
     break;
 	    }
 	
-	} while (choice != '8');
+	} while (choice != '9');
 	    return 0;
 	}
