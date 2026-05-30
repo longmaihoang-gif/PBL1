@@ -17,9 +17,38 @@
 	
 	SinhVien ds[MAX];
 	int n = 0;
-	int colLocked[6] = {0, 0, 0, 0, 0, 0};
+		int colLocked[6] = {0, 0, 0, 0, 0, 0};
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
+	
+	#define MAX_MON 100
+	char tenMon[MAX_MON][30];
+	char fileMon[MAX_MON][50];
+	int soMon = 0;
+	
+	void docConfig() {
+	    FILE *fp = fopen("monhoc.txt", "r");
+	    if (!fp) {
+	        fp = fopen("monhoc.txt", "w");
+	        if (fp) {
+	            fprintf(fp, "Toan Res/toan.dat\n");
+	            fprintf(fp, "Ly Res/ly.dat\n");
+	            fprintf(fp, "Hoa Res/hoa.dat\n");
+	            fclose(fp);
+	        }
+	        soMon = 3;
+	        strcpy(tenMon[0], "Toan"); strcpy(fileMon[0], "Res/toan.dat");
+	        strcpy(tenMon[1], "Ly");   strcpy(fileMon[1], "Res/ly.dat");
+	        strcpy(tenMon[2], "Hoa");  strcpy(fileMon[2], "Res/hoa.dat");
+	        return;
+	    }
+	    soMon = 0;
+	    while (fscanf(fp, "%29s %49s", tenMon[soMon], fileMon[soMon]) == 2) {
+	        soMon++;
+	        if (soMon >= MAX_MON) break;
+	    }
+	    fclose(fp);
+	}
 	
 	bool docFile(char tenFile[]);
 	bool daCoDiem(SinhVien sv);
@@ -40,14 +69,25 @@
 	void chonFileXem(char tenFile[]) {
 	    int lc;
 	    printf("\nChon file xem:\n");
-	    printf("1. Toan\n2. Ly\n3. Hoa\n4. Tong hop\nChon: ");
+	    int i;
+	    for (i = 0; i < soMon; i++) {
+	        printf("%d. %s\n", i + 1, tenMon[i]);
+	    }
+	    printf("%d. Tong hop\nChon: ", soMon + 1);
 	    scanf("%d", &lc);
 	
-	    if (lc == 1) strcpy(tenFile, "toan.dat");
-	    else if (lc == 2) strcpy(tenFile, "ly.dat");
-	    else if (lc == 3) strcpy(tenFile, "hoa.dat");
-	    else if (lc == 4) strcpy(tenFile, "tonghop"); 
-	    docFile(tenFile);
+	    if (lc >= 1 && lc <= soMon) {
+	        strcpy(tenFile, fileMon[lc - 1]);
+	    } else if (lc == soMon + 1) {
+	        strcpy(tenFile, "tonghop");
+	    } else {
+	        printf("Lua chon khong hop le!\n");
+	        if (soMon > 0) strcpy(tenFile, fileMon[0]);
+	        else strcpy(tenFile, "");
+	    }
+	    if (strlen(tenFile) > 0) {
+	        docFile(tenFile);
+	    }
 	}
 	void ghiFile(char tenFile[]) {
         FILE *fp = fopen(tenFile, "w"); 
@@ -505,47 +545,66 @@ void sua() {
     printf("Khong tim thay!\n");
 }
 void tongHop3File() {
-    SinhVien toan[MAX], ly[MAX], hoa[MAX];
-    int nToan = 0, nLy = 0, nHoa = 0;
-    int i, j, k;
-   
-    if (docFile("toan.dat")) {
-        nToan = n;
-        for(i = 0; i < nToan; i++) toan[i] = ds[i];
+    if (soMon == 0) {
+        n = 0;
+        return;
     }
-    if (docFile("ly.dat")) {
-        nLy = n;
-        for(i = 0; i < nLy; i++) ly[i] = ds[i];
+    
+    if (!docFile((char*)fileMon[0])) {
+        n = 0;
+        return;
     }
-    if (docFile("hoa.dat")) {
-        nHoa = n;
-        for(i = 0; i < nHoa; i++) hoa[i] = ds[i];
+    
+    SinhVien tempDS[MAX];
+    int nTemp = n;
+    int i, f, j;
+    for (i = 0; i < nTemp; i++) {
+        tempDS[i] = ds[i];
     }
-    n = 0;
-    for(i = 0; i < nToan; i++) {
-        for(j = 0; j < nLy; j++) {
-            if(strcmp(toan[i].maSV, ly[j].maSV) == 0) {
-                for(k = 0; k < nHoa; k++) {
-                    if(strcmp(toan[i].maSV, hoa[k].maSV) == 0) {
-                        strcpy(ds[n].maSV, toan[i].maSV);
-                        strcpy(ds[n].tenSV, toan[i].tenSV);
-
-                        ds[n].dtb = (toan[i].dtb + ly[j].dtb + hoa[k].dtb) / 3.0;
-                        
-                        if (ds[n].dtb >= 8.5) strcpy(ds[n].diemChu, "A");
-                        else if (ds[n].dtb >= 7.0) strcpy(ds[n].diemChu, "B");
-                        else if (ds[n].dtb >= 5.5) strcpy(ds[n].diemChu, "C");
-                        else if (ds[n].dtb >= 4.0) strcpy(ds[n].diemChu, "D");
-                        else strcpy(ds[n].diemChu, "F");
-
-                        n++;
+    
+    float tongDTB[MAX];
+    int soMonCompleted[MAX];
+    for (i = 0; i < nTemp; i++) {
+        tongDTB[i] = 0.0f;
+        soMonCompleted[i] = 0;
+    }
+    
+    for (f = 0; f < soMon; f++) {
+        if (!docFile((char*)fileMon[f])) {
+            continue;
+        }
+        
+        for (i = 0; i < nTemp; i++) {
+            for (j = 0; j < n; j++) {
+                if (strcmp(tempDS[i].maSV, ds[j].maSV) == 0) {
+                    if (daCoDiem(ds[j])) {
+                        tongDTB[i] += ds[j].dtb;
+                        soMonCompleted[i]++;
                     }
+                    break;
                 }
             }
         }
-    }   
+    }
+    
+    n = 0;
+    for (i = 0; i < nTemp; i++) {
+        if (soMonCompleted[i] > 0) {
+            ds[n] = tempDS[i];
+            ds[n].dtb = tongDTB[i] / (float)soMonCompleted[i];
+            
+            if (ds[n].dtb >= 8.5) strcpy(ds[n].diemChu, "A");
+            else if (ds[n].dtb >= 7.0) strcpy(ds[n].diemChu, "B");
+            else if (ds[n].dtb >= 5.5) strcpy(ds[n].diemChu, "C");
+            else if (ds[n].dtb >= 4.0) strcpy(ds[n].diemChu, "D");
+            else strcpy(ds[n].diemChu, "F");
+            
+            n++;
+        }
+    }
+    
     if (n == 0) {
-        printf("\n[!] Khong tim thay sinh vien nao co du diem ca 3 mon de tong hop!\n");
+        printf("\n[!] Khong tim thay sinh vien nao co du diem de tong hop!\n");
     }
 }
 	void UI_Welcome() {
@@ -561,18 +620,24 @@ void tongHop3File() {
 	void chonFileLamViec(char tenFile[]) {
 	    int lc;
 	    printf("\nChon file lam viec:\n");
-	    printf("1. Toan\n2. Ly\n3. Hoa\nChon: ");
+	    int i;
+	    for (i = 0; i < soMon; i++) {
+	        printf("%d. %s\n", i + 1, tenMon[i]);
+	    }
+	    printf("Chon: ");
 	    scanf("%d", &lc);
 	
-	    if (lc == 1) strcpy(tenFile, "toan.dat");
-	    else if (lc == 2) strcpy(tenFile, "ly.dat");
-	    else if (lc == 3) strcpy(tenFile, "hoa.dat");
-	    else {
+	    if (lc >= 1 && lc <= soMon) {
+	        strcpy(tenFile, fileMon[lc - 1]);
+	    } else {
 	        printf("Lua chon khong hop le!\n");
-	        strcpy(tenFile, "toan.dat"); 
+	        if (soMon > 0) strcpy(tenFile, fileMon[0]);
+	        else strcpy(tenFile, "");
 	    }
 	
-	    docFile(tenFile);
+	    if (strlen(tenFile) > 0) {
+	        docFile(tenFile);
+	    }
 	}
 	void tangMaSV(char ma[]) {
         int len = strlen(ma);
@@ -610,16 +675,14 @@ void themSinhVien() {
     fgets(tenMoi, sizeof(tenMoi), stdin);
     tenMoi[strcspn(tenMoi, "\n")] = '\0';
 
-    char files[][20] = {"toan.dat", "ly.dat", "hoa.dat"};
-
     int f;
 
-    for (f = 0; f < 3; f++) {
+    for (f = 0; f < soMon; f++) {
 
-        docFile(files[f]);
+        docFile(fileMon[f]);
 
         if (n >= MAX) {
-            printf("\n[!] File %s da day!\n", files[f]);
+            printf("\n[!] File %s da day!\n", fileMon[f]);
             continue;
         }
 
@@ -648,10 +711,10 @@ void themSinhVien() {
 
         n++;
 
-        ghiFile(files[f]);
+        ghiFile(fileMon[f]);
     }
 
-    printf("\nDa them sinh vien vao ca 3 file thanh cong!\nNhan c de tiep tuc, nhan bat ky de dung");
+    printf("\nDa them sinh vien vao tat ca file mon hoc thanh cong!\nNhan c de tiep tuc, nhan bat ky de dung");
     } while (getch()=='c');
 }
     void Sapxep (char tenFile[]) {
@@ -805,6 +868,7 @@ void themSinhVien() {
 	int main() {
 	    char tenFile[50] = "";
 		char choice;
+	    docConfig();
 	    UI_Welcome();
 	    do {
 	        printf("\n");

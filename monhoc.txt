@@ -1,0 +1,4 @@
+Toan Res/toan.dat
+Ly Res/ly.dat
+Hoa Res/hoa.dat
+Van Res/van.dat
