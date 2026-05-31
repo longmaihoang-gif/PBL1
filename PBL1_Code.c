@@ -20,7 +20,8 @@
 		int colLocked[6] = {0, 0, 0, 0, 0, 0};
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
-	#define MAX_MON 100 
+	
+	#define MAX_MON 100
 	char tenMon[MAX_MON][30];
 	char fileMon[MAX_MON][50];
 	int soMon = 0;
@@ -717,32 +718,50 @@ void themSinhVien() {
     } while (getch()=='c');
 }
     void Sapxep (char tenFile[]) {
-        if (n == 0) {
-                printf("\n[!] RAM chua co du lieu. Vui long chon file de nap du lieu truoc!\n");
-                chonFileLamViec(tenFile); 
-            }
-
-          
-            if (n == 0) {
-                printf("\nDanh sach trong hoac file khong co du lieu! Khong the sap xep.\n");
-                return;
-            }
-
-           
             int tieuChi, kieu, i, j;
+
+  
             printf("\n===== CHON TIEU CHI SAP XEP =====\n");
             printf("1. Sap xep theo Ma so sinh vien (MSSV)\n");
             printf("2. Sap xep theo Ten sinh vien\n");
             printf("3. Sap xep theo Lop\n");
             printf("4. Sap xep theo Diem trung binh (DTB)\n");
+            printf("0. Quay lai\n");
             printf("Chon tieu chi (1-4): ");
             scanf("%d", &tieuChi);
+
+            if (tieuChi == 0) return;
 
             if (tieuChi < 1 || tieuChi > 4) {
                 printf("[!] Tieu chi khong hop le!\n");
                 return;
             }
 
+           
+            printf("\nChon file can sap xep:\n");
+            for (i = 0; i < soMon; i++)
+                printf("%d. %s\n", i + 1, tenMon[i]);
+            printf("Chon: ");
+            int lcFile;
+            scanf("%d", &lcFile);
+
+            if (lcFile < 1 || lcFile > soMon) {
+                printf("[!] Lua chon file khong hop le!\n");
+                return;
+            }
+
+            strcpy(tenFile, fileMon[lcFile - 1]);
+            if (!docFile(tenFile)) {
+                printf("[!] Khong the doc file!\n");
+                return;
+            }
+
+            if (n == 0) {
+                printf("\nDanh sach trong hoac file khong co du lieu! Khong the sap xep.\n");
+                return;
+            }
+
+        
             printf("\n1. Tang dan\n2. Giam dan\nChon kieu (1-2): ");
             scanf("%d", &kieu);
 
@@ -751,13 +770,13 @@ void themSinhVien() {
                 return;
             }
 
-  
+    
             for (i = 0; i < n - 1; i++) {
                 for (j = i + 1; j < n; j++) {
                     bool canDoiCho = false;
 
                     switch (tieuChi) {
-                        case 1: 
+                        case 1:
                             if (kieu == 1 && strcmp(ds[i].maSV, ds[j].maSV) > 0) canDoiCho = true;
                             if (kieu == 2 && strcmp(ds[i].maSV, ds[j].maSV) < 0) canDoiCho = true;
                             break;
@@ -770,12 +789,12 @@ void themSinhVien() {
                             break;
                         }
 
-                        case 3: 
+                        case 3:
                             if (kieu == 1 && strcmp(ds[i].lop, ds[j].lop) > 0) canDoiCho = true;
                             if (kieu == 2 && strcmp(ds[i].lop, ds[j].lop) < 0) canDoiCho = true;
                             break;
 
-                        case 4: 
+                        case 4:
                             if (kieu == 1 && ds[i].dtb > ds[j].dtb) canDoiCho = true;
                             if (kieu == 2 && ds[i].dtb < ds[j].dtb) canDoiCho = true;
                             break;
@@ -790,15 +809,14 @@ void themSinhVien() {
             }
 
             printf("\n=> Da sap xep xong! Duoi day la danh sach sau khi sap xep:\n");
-            xemDanhSach(); 
+            xemDanhSach();
 
-         
             char cLuu;
             printf("\nBan co muon luu thu tu sap xep moi nay vao file %s khong? (y/n): ", tenFile);
-            fflush(stdin); 
+            fflush(stdin);
             cLuu = getch();
             if (cLuu == 'y' || cLuu == 'Y') {
-                ghiFile(tenFile); 
+                ghiFile(tenFile);
                 printf("\nDa luu thay doi thu tu vao file thanh cong!\n");
             } else {
                 printf("\nChi hien thi tam thoi, khong thay doi trong file.\n");
@@ -869,15 +887,15 @@ void themSinhVien() {
 void themMonHoc() {
     int ch, i;
     char tenMon_new[30];
-    char duongDan[60];  
+    char duongDan[60];   /* Res/xxx.dat */
     float wL, wP, wPre_new, wF;
 
-  
+   
     while ((ch = getchar()) != '\n' && ch != EOF);
 
     printf("\n===== THEM MON HOC MOI =====\n");
 
-  
+   
     printf("Nhap ten mon hoc (vd: Tin, Anh, ...): ");
     fgets(tenMon_new, sizeof(tenMon_new), stdin);
     tenMon_new[strcspn(tenMon_new, "\r\n")] = '\0';
@@ -887,7 +905,7 @@ void themMonHoc() {
         return;
     }
 
-  
+
     for (i = 0; i < soMon; i++) {
         if (strcmp(tenMon[i], tenMon_new) == 0) {
             printf("[!] Mon '%s' da ton tai trong danh sach!\n", tenMon_new);
@@ -900,7 +918,7 @@ void themMonHoc() {
         return;
     }
 
-   
+
     char tenLower[30];
     strcpy(tenLower, tenMon_new);
     for (i = 0; tenLower[i]; i++)
@@ -908,7 +926,7 @@ void themMonHoc() {
             tenLower[i] += 32;
     sprintf(duongDan, "Res/%s.dat", tenLower);
 
-  
+
     {
         FILE *check = fopen(duongDan, "r");
         if (check) {
@@ -961,7 +979,7 @@ void themMonHoc() {
         }
     }
 
-   
+
     wLab   = wLab_bk;
     wPT    = wPT_bk;
     wPre   = wPre_bk;
@@ -970,7 +988,7 @@ void themMonHoc() {
     n  = n_bk;
     memcpy(ds, ds_bk, sizeof(ds));
 
-   
+  
     {
         FILE *fp = fopen(duongDan, "w");
         if (!fp) {
@@ -978,10 +996,10 @@ void themMonHoc() {
             return;
         }
 
-      
+        
         fprintf(fp, "%f %f %f %f 0 0 0 0 0 0\n", wL, wP, wPre_new, wF);
 
-      
+        
         int si;
         for (si = 0; si < soSV_mau; si++) {
             fprintf(fp, "%s %s %s -1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000\n",
@@ -992,12 +1010,12 @@ void themMonHoc() {
         fclose(fp);
     }
 
-   
+
     strcpy(tenMon[soMon], tenMon_new);
     strcpy(fileMon[soMon], duongDan);
     soMon++;
 
-  
+   
     {
         FILE *fp = fopen("monhoc.txt", "w");
         if (fp) {
