@@ -20,7 +20,7 @@
 		int colLocked[6] = {0, 0, 0, 0, 0, 0};
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
-	
+	#define MAX_MON 100 
 	char tenMon[MAX_MON][30];
 	char fileMon[MAX_MON][50];
 	int soMon = 0;
