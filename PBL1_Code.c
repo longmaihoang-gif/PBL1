@@ -21,7 +21,6 @@
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
 	
-	#define MAX_MON 100
 	char tenMon[MAX_MON][30];
 	char fileMon[MAX_MON][50];
 	int soMon = 0;
@@ -866,21 +865,19 @@ void themSinhVien() {
 	        }
     }
 
-/* =====================================================================
-   TINH NANG MOI: THEM MON HOC
-   ===================================================================== */
+
 void themMonHoc() {
     int ch, i;
     char tenMon_new[30];
-    char duongDan[60];   /* Res/xxx.dat */
+    char duongDan[60];  
     float wL, wP, wPre_new, wF;
 
-    /* --- flush stdin --- */
+  
     while ((ch = getchar()) != '\n' && ch != EOF);
 
     printf("\n===== THEM MON HOC MOI =====\n");
 
-    /* 1. Nhap ten mon (khong khoang trang) */
+  
     printf("Nhap ten mon hoc (vd: Tin, Anh, ...): ");
     fgets(tenMon_new, sizeof(tenMon_new), stdin);
     tenMon_new[strcspn(tenMon_new, "\r\n")] = '\0';
@@ -890,7 +887,7 @@ void themMonHoc() {
         return;
     }
 
-    /* Kiem tra ten bi trung */
+  
     for (i = 0; i < soMon; i++) {
         if (strcmp(tenMon[i], tenMon_new) == 0) {
             printf("[!] Mon '%s' da ton tai trong danh sach!\n", tenMon_new);
@@ -903,7 +900,7 @@ void themMonHoc() {
         return;
     }
 
-    /* 2. Xay dung duong dan: Res/<tenMon_new>.dat (chu thuong) */
+   
     char tenLower[30];
     strcpy(tenLower, tenMon_new);
     for (i = 0; tenLower[i]; i++)
@@ -911,7 +908,7 @@ void themMonHoc() {
             tenLower[i] += 32;
     sprintf(duongDan, "Res/%s.dat", tenLower);
 
-    /* 3. Kiem tra file da ton tai chua */
+  
     {
         FILE *check = fopen(duongDan, "r");
         if (check) {
@@ -927,7 +924,7 @@ void themMonHoc() {
         }
     }
 
-    /* 4. Nhap trong so */
+
     printf("\nNhap trong so (tong = 1.0):\n");
     printf("  w_Lab  (moi lab, co 2 bai) : ");
     scanf("%f", &wL);
@@ -945,8 +942,7 @@ void themMonHoc() {
         return;
     }
 
-    /* 5. Lay mau sinh vien tu file mon dau tien (neu co) */
-    /* Luu trong so hien tai de khoi phuc sau */
+ 
     float wLab_bk = wLab, wPT_bk = wPT, wPre_bk = wPre, wFinal_bk = wFinal;
     int   locked_bk[6];
     int   n_bk = n;
@@ -958,14 +954,14 @@ void themMonHoc() {
     SinhVien mau[MAX];
 
     if (soMon > 0) {
-        /* Doc file dau tien de lay danh sach sinh vien */
+       
         if (docFile(fileMon[0])) {
             soSV_mau = n;
             memcpy(mau, ds, n * sizeof(SinhVien));
         }
     }
 
-    /* Khoi phuc global state */
+   
     wLab   = wLab_bk;
     wPT    = wPT_bk;
     wPre   = wPre_bk;
@@ -974,7 +970,7 @@ void themMonHoc() {
     n  = n_bk;
     memcpy(ds, ds_bk, sizeof(ds));
 
-    /* 6. Tao file .dat moi */
+   
     {
         FILE *fp = fopen(duongDan, "w");
         if (!fp) {
@@ -982,10 +978,10 @@ void themMonHoc() {
             return;
         }
 
-        /* Dong 1: trong so + chot (tat ca = 0) */
+      
         fprintf(fp, "%f %f %f %f 0 0 0 0 0 0\n", wL, wP, wPre_new, wF);
 
-        /* Dong tiep theo: copy sinh vien tu file mau, diem = -1 */
+      
         int si;
         for (si = 0; si < soSV_mau; si++) {
             fprintf(fp, "%s %s %s -1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000\n",
@@ -996,12 +992,12 @@ void themMonHoc() {
         fclose(fp);
     }
 
-    /* 7. Cap nhat mang tenMon / fileMon trong bo nho */
+   
     strcpy(tenMon[soMon], tenMon_new);
     strcpy(fileMon[soMon], duongDan);
     soMon++;
 
-    /* 8. Ghi lai monhoc.txt */
+  
     {
         FILE *fp = fopen("monhoc.txt", "w");
         if (fp) {
@@ -1018,7 +1014,7 @@ void themMonHoc() {
            wL, wP, wPre_new, wF);
     printf("     monhoc.txt   : Da cap nhat.\n");
 }
-/* =================================================================== */
+
 
 	int main() {
 	    char tenFile[50] = "";
