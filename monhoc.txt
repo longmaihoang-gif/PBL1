@@ -2,3 +2,5 @@ Toan Res/toan.dat
 Ly Res/ly.dat
 Hoa Res/hoa.dat
 Van Res/van.dat
+LichsuDang Res/lichsudang.dat
+GDTC2 Res/gdtc2.dat

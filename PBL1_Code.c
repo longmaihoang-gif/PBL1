@@ -4,6 +4,7 @@
 	#include <conio.h>
 	#include <stdbool.h>
 	#define MAX 100
+    #define MAX_MON 100
 	int cheDoTong = 0;
 
 	typedef struct {
@@ -21,12 +22,11 @@
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
 	
-	#define MAX_MON 100
 	char tenMon[MAX_MON][30];
 	char fileMon[MAX_MON][50];
 	int soMon = 0;
 	
-	void docConfig() {
+	void docFilemonhoc() {
 	    FILE *fp = fopen("monhoc.txt", "r");
 	    if (!fp) {
 	        fp = fopen("monhoc.txt", "w");
@@ -544,35 +544,22 @@ void sua() {
     }
     printf("Khong tim thay!\n");
 }
-void tongHop3File() {
-    if (soMon == 0) {
-        n = 0;
-        return;
-    }
-    
-    if (!docFile((char*)fileMon[0])) {
-        n = 0;
-        return;
-    }
-    
+void tongHopFile() {
+    if (soMon == 0 || !docFile((char*)fileMon[0])) {n = 0; return;}
     SinhVien tempDS[MAX];
     int nTemp = n;
     int i, f, j;
     for (i = 0; i < nTemp; i++) {
         tempDS[i] = ds[i];
     }
-    
     float tongDTB[MAX];
     int soMonCompleted[MAX];
     for (i = 0; i < nTemp; i++) {
         tongDTB[i] = 0.0f;
         soMonCompleted[i] = 0;
     }
-    
     for (f = 0; f < soMon; f++) {
-        if (!docFile((char*)fileMon[f])) {
-            continue;
-        }
+        if (!docFile((char*)fileMon[f])) continue;
         
         for (i = 0; i < nTemp; i++) {
             for (j = 0; j < n; j++) {
@@ -586,26 +573,21 @@ void tongHop3File() {
             }
         }
     }
-    
     n = 0;
     for (i = 0; i < nTemp; i++) {
         if (soMonCompleted[i] > 0) {
             ds[n] = tempDS[i];
             ds[n].dtb = tongDTB[i] / (float)soMonCompleted[i];
-            
+    
             if (ds[n].dtb >= 8.5) strcpy(ds[n].diemChu, "A");
             else if (ds[n].dtb >= 7.0) strcpy(ds[n].diemChu, "B");
             else if (ds[n].dtb >= 5.5) strcpy(ds[n].diemChu, "C");
             else if (ds[n].dtb >= 4.0) strcpy(ds[n].diemChu, "D");
             else strcpy(ds[n].diemChu, "F");
-            
             n++;
         }
     }
-    
-    if (n == 0) {
-        printf("\n[!] Khong tim thay sinh vien nao co du diem de tong hop!\n");
-    }
+    if (n == 0) printf("\n[!] Khong tim thay sinh vien nao co du diem de tong hop!\n");
 }
 	void UI_Welcome() {
 	    printf("______________________________________________________________________________________________________\n");
@@ -685,7 +667,6 @@ void themSinhVien() {
             printf("\n[!] File %s da day!\n", fileMon[f]);
             continue;
         }
-
         
         if (n == 0) {
             strcpy(ds[n].maSV, "10225000001");
@@ -693,11 +674,9 @@ void themSinhVien() {
             strcpy(ds[n].maSV, ds[n - 1].maSV);
             tangMaSV(ds[n].maSV);
         }
-
         
         strcpy(ds[n].tenSV, tenMoi);
         strcpy(ds[n].lop, lop);
-
      
         ds[n].lab1 = -1;
         ds[n].lab2 = -1;
@@ -1010,11 +989,9 @@ void themMonHoc() {
         fclose(fp);
     }
 
-
     strcpy(tenMon[soMon], tenMon_new);
     strcpy(fileMon[soMon], duongDan);
     soMon++;
-
    
     {
         FILE *fp = fopen("monhoc.txt", "w");
@@ -1033,11 +1010,10 @@ void themMonHoc() {
     printf("     monhoc.txt   : Da cap nhat.\n");
 }
 
-
 	int main() {
 	    char tenFile[50] = "";
 		char choice;
-	    docConfig();
+	    docFilemonhoc();
 	    UI_Welcome();
 	    do {
 	        printf("\n");
@@ -1070,7 +1046,7 @@ void themMonHoc() {
 	    chonFileXem(file);
 	
 	    if (strcmp(file, "tonghop") == 0) {
-	        tongHop3File();
+	        tongHopFile();
 	        cheDoTong = 1;
 	        xemDanhSach();
 	        cheDoTong = 0;
