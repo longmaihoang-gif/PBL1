@@ -1,4 +1,4 @@
-#include <stdio.h>
+    #include <stdio.h>
 	#include <string.h>
 	#include <stdlib.h>
 	#include <conio.h>
@@ -698,7 +698,6 @@ void themSinhVien() {
 }
     void Sapxep (char tenFile[]) {
             int tieuChi, kieu, i, j;
-
   
             printf("\n===== CHON TIEU CHI SAP XEP =====\n");
             printf("1. Sap xep theo Ma so sinh vien (MSSV)\n");
@@ -715,7 +714,6 @@ void themSinhVien() {
                 printf("[!] Tieu chi khong hop le!\n");
                 return;
             }
-
            
             printf("\nChon file can sap xep:\n");
             for (i = 0; i < soMon; i++)
@@ -739,7 +737,6 @@ void themSinhVien() {
                 printf("\nDanh sach trong hoac file khong co du lieu! Khong the sap xep.\n");
                 return;
             }
-
         
             printf("\n1. Tang dan\n2. Giam dan\nChon kieu (1-2): ");
             scanf("%d", &kieu);
@@ -748,7 +745,6 @@ void themSinhVien() {
                 printf("[!] Kieu sap xep khong hop le!\n");
                 return;
             }
-
     
             for (i = 0; i < n - 1; i++) {
                 for (j = i + 1; j < n; j++) {
@@ -862,18 +858,15 @@ void themSinhVien() {
 	        }
     }
 
-
 void themMonHoc() {
     int ch, i;
     char tenMon_new[30];
     char duongDan[60];   /* Res/xxx.dat */
     float wL, wP, wPre_new, wF;
-
    
     while ((ch = getchar()) != '\n' && ch != EOF);
 
     printf("\n===== THEM MON HOC MOI =====\n");
-
    
     printf("Nhap ten mon hoc (vd: Tin, Anh, ...): ");
     fgets(tenMon_new, sizeof(tenMon_new), stdin);
@@ -883,7 +876,6 @@ void themMonHoc() {
         printf("[!] Ten mon khong duoc de trong!\n");
         return;
     }
-
 
     for (i = 0; i < soMon; i++) {
         if (strcmp(tenMon[i], tenMon_new) == 0) {
@@ -897,14 +889,12 @@ void themMonHoc() {
         return;
     }
 
-
     char tenLower[30];
     strcpy(tenLower, tenMon_new);
     for (i = 0; tenLower[i]; i++)
         if (tenLower[i] >= 'A' && tenLower[i] <= 'Z')
             tenLower[i] += 32;
     sprintf(duongDan, "Res/%s.dat", tenLower);
-
 
     {
         FILE *check = fopen(duongDan, "r");
@@ -920,7 +910,6 @@ void themMonHoc() {
             printf("\n");
         }
     }
-
 
     printf("\nNhap trong so (tong = 1.0):\n");
     printf("  w_Lab  (moi lab, co 2 bai) : ");
@@ -938,7 +927,6 @@ void themMonHoc() {
         printf("[!] Tong trong so != 1.0. Vui long nhap lai!\n");
         return;
     }
-
  
     float wLab_bk = wLab, wPT_bk = wPT, wPre_bk = wPre, wFinal_bk = wFinal;
     int   locked_bk[6];
@@ -958,7 +946,6 @@ void themMonHoc() {
         }
     }
 
-
     wLab   = wLab_bk;
     wPT    = wPT_bk;
     wPre   = wPre_bk;
@@ -966,7 +953,6 @@ void themMonHoc() {
     memcpy(colLocked, locked_bk, sizeof(colLocked));
     n  = n_bk;
     memcpy(ds, ds_bk, sizeof(ds));
-
   
     {
         FILE *fp = fopen(duongDan, "w");
@@ -974,11 +960,9 @@ void themMonHoc() {
             printf("[!] Khong the tao file '%s'. Kiem tra thu muc Res/ da ton tai chua!\n", duongDan);
             return;
         }
-
         
         fprintf(fp, "%f %f %f %f 0 0 0 0 0 0\n", wL, wP, wPre_new, wF);
 
-        
         int si;
         for (si = 0; si < soSV_mau; si++) {
             fprintf(fp, "%s %s %s -1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000\n",
