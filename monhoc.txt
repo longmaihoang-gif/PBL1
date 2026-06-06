@@ -4,3 +4,4 @@ Hoa Res/hoa.dat
 Van Res/van.dat
 LichsuDang Res/lichsudang.dat
 GDTC2 Res/gdtc2.dat
+Anh Res/anh.dat
