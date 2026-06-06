@@ -1,7 +1,8 @@
-Toan Res/toan.dat
-Ly Res/ly.dat
-Hoa Res/hoa.dat
-Van Res/van.dat
-LichsuDang Res/lichsudang.dat
-GDTC2 Res/gdtc2.dat
-Anh Res/anh.dat
+Toan	Res/toan.dat
+Ly	Res/ly.dat
+Hoa	Res/hoa.dat
+Van	Res/van.dat
+LichsuDang	Res/lichsudang.dat
+GDTC2	Res/gdtc2.dat
+Anh	Res/anh.dat
+Lap trinh FCG	Res/lap trinh fcg.dat

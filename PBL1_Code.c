@@ -5,6 +5,7 @@
 	#include <stdbool.h>
 	#define MAX 100
     #define MAX_MON 100
+    #define MIN_TC 3
 	int cheDoTong = 0;
 
 	typedef struct {
@@ -14,6 +15,7 @@
 	    float lab1, lab2, pt1, pt2, presentation, finalTest;
 	    float dtb;
 	    char diemChu[3];
+	    int soTinChiTichLuy;
 	} SinhVien;
 	
 	SinhVien ds[MAX];
@@ -41,9 +43,9 @@
 	    if (!fp) {
 	        fp = fopen("monhoc.txt", "w");
 	        if (fp) {
-	            fprintf(fp, "Toan Res/toan.dat\n");
-	            fprintf(fp, "Ly Res/ly.dat\n");
-	            fprintf(fp, "Hoa Res/hoa.dat\n");
+	            fprintf(fp, "Toan\tRes/toan.dat\n");
+	            fprintf(fp, "Ly\tRes/ly.dat\n");
+	            fprintf(fp, "Hoa\tRes/hoa.dat\n");
 	            fclose(fp);
 	        }
 	        soMon = 3;
@@ -58,14 +60,14 @@
 	        /* Bo qua dong trong */
 	        line[strcspn(line, "\r\n")] = '\0';
 	        if (strlen(line) < 3) continue;
-	        /* Tach ten mon va duong dan theo dau cach dau tien */
-	        char *space = strchr(line, ' ');
-	        if (!space) continue;
-	        *space = '\0';
+	        /* Tach ten mon va duong dan theo dau TAB */
+	        char *tab = strchr(line, '\t');
+	        if (!tab) continue;
+	        *tab = '\0';
 	        char *ten  = line;
-	        char *file = space + 1;
+	        char *file = tab + 1;
 	        /* Bo khoang trang thua o dau file path */
-	        while (*file == ' ') file++;
+	        while (*file == ' ' || *file == '\t') file++;
 	        if (strlen(ten) == 0 || strlen(file) == 0) continue;
 	        strncpy(tenMon[soMon],  ten,  29); tenMon[soMon][29]  = '\0';
 	        strncpy(fileMon[soMon], file, 49); fileMon[soMon][49] = '\0';
@@ -423,11 +425,16 @@ void xemDanhSach() {
         printf("\n                    *===== DANH SACH HOC BONG =====*\n\n");
     
         SinhVien temp[MAX];
-        for (i = 0; i < n; i++) temp[i] = ds[i];
+        int countHB = 0;
+        for (i = 0; i < n; i++) {
+            if (ds[i].soTinChiTichLuy >= MIN_TC) {
+                temp[countHB++] = ds[i];
+            }
+        }
     
         int j;
-        for (i = 0; i < n - 1; i++) {
-            for (j = i + 1; j < n; j++) {
+        for (i = 0; i < countHB - 1; i++) {
+            for (j = i + 1; j < countHB; j++) {
                 if (temp[i].dtb < temp[j].dtb) {
                     SinhVien t = temp[i];
                     temp[i] = temp[j];
@@ -436,7 +443,7 @@ void xemDanhSach() {
             }
         }
     
-        int limit = n < 9 ? n : 9;
+        int limit = countHB < 9 ? countHB : 9;
     
         for (i = 0; i < limit; i++) {
             if (temp[i].dtb < 0) break;
@@ -445,8 +452,8 @@ void xemDanhSach() {
             else if (i < 6) loaiHB = 'B';
             else loaiHB = 'C';
     
-            printf("| %-12s| %-12s| %-25s| DTB: %-5.2f | Hoc bong: %c |\n",
-                   temp[i].maSV, temp[i].lop, temp[i].tenSV, temp[i].dtb, loaiHB);
+            printf("| %-12s| %-12s| %-25s| DTB: %-5.2f | TC: %-2d | Hoc bong: %c |\n",
+                   temp[i].maSV, temp[i].lop, temp[i].tenSV, temp[i].dtb, temp[i].soTinChiTichLuy, loaiHB);
         }
     }
 }
@@ -596,20 +603,25 @@ void tongHopFile() {
     for (i = 0; i < nTemp; i++) {
         tempDS[i] = ds[i];
     }
-    float tongDTB[MAX];
+    float tongDiemNhanTinChi[MAX];
+    int tongTinChiSV[MAX];
     int soMonCompleted[MAX];
     for (i = 0; i < nTemp; i++) {
-        tongDTB[i] = 0.0f;
+        tongDiemNhanTinChi[i] = 0.0f;
+        tongTinChiSV[i] = 0;
         soMonCompleted[i] = 0;
     }
     for (f = 0; f < soMon; f++) {
         if (!docFile((char*)fileMon[f])) continue;
+        // docFile se load soTinChi cua mon nay vao bien toan cuc soTinChi
+        int tc = (soTinChi > 0) ? soTinChi : 1; // Fallback neu tin chi chua set
         
         for (i = 0; i < nTemp; i++) {
             for (j = 0; j < n; j++) {
                 if (strcmp(tempDS[i].maSV, ds[j].maSV) == 0) {
                     if (daCoDiem(ds[j])) {
-                        tongDTB[i] += ds[j].dtb;
+                        tongDiemNhanTinChi[i] += ds[j].dtb * tc;
+                        tongTinChiSV[i] += tc;
                         soMonCompleted[i]++;
                     }
                     break;
@@ -621,7 +633,12 @@ void tongHopFile() {
     for (i = 0; i < nTemp; i++) {
         if (soMonCompleted[i] > 0) {
             ds[n] = tempDS[i];
-            ds[n].dtb = tongDTB[i] / (float)soMonCompleted[i];
+            if (tongTinChiSV[i] > 0) {
+                ds[n].dtb = tongDiemNhanTinChi[i] / (float)tongTinChiSV[i];
+            } else {
+                ds[n].dtb = 0.0f;
+            }
+            ds[n].soTinChiTichLuy = tongTinChiSV[i];
     
             if (ds[n].dtb >= 8.5) strcpy(ds[n].diemChu, "A");
             else if (ds[n].dtb >= 7.0) strcpy(ds[n].diemChu, "B");
@@ -1143,7 +1160,7 @@ void themMonHoc() {
         FILE *fp = fopen("monhoc.txt", "w");
         if (fp) {
             for (i = 0; i < soMon; i++)
-                fprintf(fp, "%s %s\n", tenMon[i], fileMon[i]);
+                fprintf(fp, "%s\t%s\n", tenMon[i], fileMon[i]);
             fclose(fp);
         }
     }
