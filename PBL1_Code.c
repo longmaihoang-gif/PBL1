@@ -1,4 +1,4 @@
-    #include <stdio.h>
+#include <stdio.h>
 	#include <string.h>
 	#include <stdlib.h>
 	#include <conio.h>
@@ -21,6 +21,7 @@
 		int colLocked[6] = {0, 0, 0, 0, 0, 0};
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
+	int soTinChi = 0;
 	
 	char tenMon[MAX_MON][30];
 	char fileMon[MAX_MON][50];
@@ -52,9 +53,23 @@
 	        return;
 	    }
 	    soMon = 0;
-	    while (fscanf(fp, "%29s %49s", tenMon[soMon], fileMon[soMon]) == 2) {
+	    char line[256];
+	    while (fgets(line, sizeof(line), fp) && soMon < MAX_MON) {
+	        /* Bo qua dong trong */
+	        line[strcspn(line, "\r\n")] = '\0';
+	        if (strlen(line) < 3) continue;
+	        /* Tach ten mon va duong dan theo dau cach dau tien */
+	        char *space = strchr(line, ' ');
+	        if (!space) continue;
+	        *space = '\0';
+	        char *ten  = line;
+	        char *file = space + 1;
+	        /* Bo khoang trang thua o dau file path */
+	        while (*file == ' ') file++;
+	        if (strlen(ten) == 0 || strlen(file) == 0) continue;
+	        strncpy(tenMon[soMon],  ten,  29); tenMon[soMon][29]  = '\0';
+	        strncpy(fileMon[soMon], file, 49); fileMon[soMon][49] = '\0';
 	        soMon++;
-	        if (soMon >= MAX_MON) break;
 	    }
 	    fclose(fp);
 	}
@@ -103,9 +118,10 @@
         int i;
         if (!fp) return;
     
-        fprintf(fp, "%f %f %f %f %d %d %d %d %d %d\n", 
+        fprintf(fp, "%f %f %f %f %d %d %d %d %d %d %d\n", 
                     wLab, wPT, wPre, wFinal,
-                    colLocked[0], colLocked[1], colLocked[2], colLocked[3], colLocked[4], colLocked[5]);
+                    colLocked[0], colLocked[1], colLocked[2], colLocked[3], colLocked[4], colLocked[5],
+                    soTinChi);
     
         for (i = 0; i < n; i++) {
             fprintf(fp, "%s %s %s %f %f %f %f %f %f\n", 
@@ -129,13 +145,19 @@
         char line[256];
 
         if (fgets(line, sizeof(line), fp)) {
-          if (sscanf(line, "%f %f %f %f %d %d %d %d %d %d", 
+            int tc = 0;
+            int parsed = sscanf(line, "%f %f %f %f %d %d %d %d %d %d %d", 
                             &wLab, &wPT, &wPre, &wFinal, 
-                            &colLocked[0], &colLocked[1], &colLocked[2], &colLocked[3], &colLocked[4], &colLocked[5]) < 4) {
+                            &colLocked[0], &colLocked[1], &colLocked[2], &colLocked[3], &colLocked[4], &colLocked[5],
+                            &tc);
+            if (parsed < 4) {
                wLab = 0.1; wPT = 0.1; wPre = 0.2; wFinal = 0.4;
                int ci; for(ci=0;ci<6;ci++) colLocked[ci]=0;
+               soTinChi = 0;
                rewind(fp); 
-          }
+            } else {
+                soTinChi = (parsed >= 11) ? tc : 0;
+            }
         }
 
         n = 0;
@@ -757,6 +779,7 @@ void themSVVaoMonHoc() {
         char tenFile[50];
         char mssv[20];
 
+        docFilemonhoc();
         docFileSinhVien();
 
         if (nSV == 0) {
@@ -816,17 +839,17 @@ void themSVVaoMonHoc() {
                 break;
             }
 
-            /* Them sinh vien vao mang diem */
+            /* Them sinh vien vao mang diem - 6 cot diem mac dinh -1 */
             strcpy(ds[n].maSV, mssv);
             strcpy(ds[n].lop, dsSV[idx].lop);
             strcpy(ds[n].tenSV, dsSV[idx].tenSV);
-            ds[n].lab1 = -1;
-            ds[n].lab2 = -1;
-            ds[n].pt1 = -1;
-            ds[n].pt2 = -1;
+            ds[n].lab1        = -1;
+            ds[n].lab2        = -1;
+            ds[n].pt1         = -1;
+            ds[n].pt2         = -1;
             ds[n].presentation = -1;
-            ds[n].finalTest = -1;
-            ds[n].dtb = -1;
+            ds[n].finalTest   = -1;
+            ds[n].dtb         = -1;
             strcpy(ds[n].diemChu, " ");
             n++;
 
@@ -1024,6 +1047,7 @@ void themMonHoc() {
     char tenMon_new[30];
     char duongDan[60];   /* Res/xxx.dat */
     float wL, wP, wPre_new, wF;
+    int soTC;
    
     while ((ch = getchar()) != '\n' && ch != EOF);
 
@@ -1072,6 +1096,16 @@ void themMonHoc() {
         }
     }
 
+    /* Nhap so tin chi */
+    printf("\nNhap so tin chi cua mon hoc: ");
+    scanf("%d", &soTC);
+    if (soTC < 1 || soTC > 10) {
+        printf("[!] So tin chi khong hop le (1-10). Vui long nhap lai!\n");
+        return;
+    }
+
+    /* Nhap trong so */
+    while ((ch = getchar()) != '\n' && ch != EOF);
     printf("\nNhap trong so (tong = 1.0):\n");
     printf("  w_Lab  (moi lab, co 2 bai) : ");
     scanf("%f", &wL);
@@ -1088,49 +1122,16 @@ void themMonHoc() {
         printf("[!] Tong trong so != 1.0. Vui long nhap lai!\n");
         return;
     }
- 
-    float wLab_bk = wLab, wPT_bk = wPT, wPre_bk = wPre, wFinal_bk = wFinal;
-    int   locked_bk[6];
-    int   n_bk = n;
-    SinhVien ds_bk[MAX];
-    memcpy(locked_bk, colLocked, sizeof(colLocked));
-    memcpy(ds_bk, ds, sizeof(ds));
 
-    int soSV_mau = 0;
-    SinhVien mau[MAX];
-
-    if (soMon > 0) {
-       
-        if (docFile(fileMon[0])) {
-            soSV_mau = n;
-            memcpy(mau, ds, n * sizeof(SinhVien));
-        }
-    }
-
-    wLab   = wLab_bk;
-    wPT    = wPT_bk;
-    wPre   = wPre_bk;
-    wFinal = wFinal_bk;
-    memcpy(colLocked, locked_bk, sizeof(colLocked));
-    n  = n_bk;
-    memcpy(ds, ds_bk, sizeof(ds));
-  
+    /* Tao file moi chi co header, khong co sinh vien nao */
     {
         FILE *fp = fopen(duongDan, "w");
         if (!fp) {
             printf("[!] Khong the tao file '%s'. Kiem tra thu muc Res/ da ton tai chua!\n", duongDan);
             return;
         }
-        
-        fprintf(fp, "%f %f %f %f 0 0 0 0 0 0\n", wL, wP, wPre_new, wF);
-
-        int si;
-        for (si = 0; si < soSV_mau; si++) {
-            fprintf(fp, "%s %s %s -1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000\n",
-                    mau[si].maSV,
-                    mau[si].lop,
-                    mau[si].tenSV);
-        }
+        /* Header: trong so + trang thai chot (tat ca = 0) + so tin chi */
+        fprintf(fp, "%f %f %f %f 0 0 0 0 0 0 %d\n", wL, wP, wPre_new, wF, soTC);
         fclose(fp);
     }
 
@@ -1149,9 +1150,10 @@ void themMonHoc() {
 
     printf("\n[OK] Da tao mon hoc '%s':\n", tenMon_new);
     printf("     File du lieu : %s\n", duongDan);
-    printf("     So sinh vien : %d (sao chep tu file mau, diem mac dinh -1)\n", soSV_mau);
+    printf("     So tin chi   : %d\n", soTC);
     printf("     Trong so     : Lab=%.2f PT=%.2f Pre=%.2f Final=%.2f\n",
            wL, wP, wPre_new, wF);
+    printf("     Danh sach SV : Trong (them SV qua menu 'Them sinh vien')\n");
     printf("     monhoc.txt   : Da cap nhat.\n");
 }
 
