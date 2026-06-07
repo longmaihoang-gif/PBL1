@@ -25,8 +25,18 @@
 	float wLab, wPT, wPre, wFinal;
 	int soTinChi = 0;
 	
-	char tenMon[MAX_MON][30];
-	char fileMon[MAX_MON][50];
+	typedef struct {
+	    char maHP[20];
+	    char fileHP[50];
+	} HocPhan;
+
+	typedef struct {
+	    char tenMon[30];
+	    int soHocPhan;
+	    HocPhan dsHocPhan[10];
+	} MonHoc;
+
+	MonHoc dsMonHoc[MAX_MON];
 	int soMon = 0;
 
 	typedef struct {
@@ -43,41 +53,124 @@
 	    if (!fp) {
 	        fp = fopen("monhoc.txt", "w");
 	        if (fp) {
-	            fprintf(fp, "Toan\tRes/toan.dat\n");
-	            fprintf(fp, "Ly\tRes/ly.dat\n");
-	            fprintf(fp, "Hoa\tRes/hoa.dat\n");
 	            fclose(fp);
 	        }
-	        soMon = 3;
-	        strcpy(tenMon[0], "Toan"); strcpy(fileMon[0], "Res/toan.dat");
-	        strcpy(tenMon[1], "Ly");   strcpy(fileMon[1], "Res/ly.dat");
-	        strcpy(tenMon[2], "Hoa");  strcpy(fileMon[2], "Res/hoa.dat");
+	        soMon = 0;
 	        return;
 	    }
 	    soMon = 0;
-	    char line[256];
+	    char line[1024];
 	    while (fgets(line, sizeof(line), fp) && soMon < MAX_MON) {
-	        /* Bo qua dong trong */
 	        line[strcspn(line, "\r\n")] = '\0';
 	        if (strlen(line) < 3) continue;
-	        /* Tach ten mon va duong dan theo dau TAB */
-	        char *tab = strchr(line, '\t');
-	        if (!tab) continue;
-	        *tab = '\0';
-	        char *ten  = line;
-	        char *file = tab + 1;
-	        /* Bo khoang trang thua o dau file path */
-	        while (*file == ' ' || *file == '\t') file++;
-	        if (strlen(ten) == 0 || strlen(file) == 0) continue;
-	        strncpy(tenMon[soMon],  ten,  29); tenMon[soMon][29]  = '\0';
-	        strncpy(fileMon[soMon], file, 49); fileMon[soMon][49] = '\0';
+	        char *token = strtok(line, "\t");
+	        if (!token) continue;
+	        strncpy(dsMonHoc[soMon].tenMon, token, 29);
+	        dsMonHoc[soMon].tenMon[29] = '\0';
+	        token = strtok(NULL, "\t");
+	        if (!token) continue;
+	        dsMonHoc[soMon].soHocPhan = atoi(token);
+	        int i;
+	        for (i = 0; i < dsMonHoc[soMon].soHocPhan && i < 10; i++) {
+	            token = strtok(NULL, "\t");
+	            if (!token) break;
+	            strncpy(dsMonHoc[soMon].dsHocPhan[i].maHP, token, 19);
+	            dsMonHoc[soMon].dsHocPhan[i].maHP[19] = '\0';
+	            token = strtok(NULL, "\t");
+	            if (!token) break;
+	            strncpy(dsMonHoc[soMon].dsHocPhan[i].fileHP, token, 49);
+	            dsMonHoc[soMon].dsHocPhan[i].fileHP[49] = '\0';
+	        }
 	        soMon++;
 	    }
 	    fclose(fp);
 	}
+
+	void ghiFilemonhoc() {
+	    FILE *fp = fopen("monhoc.txt", "w");
+	    if (!fp) return;
+	    int i, j;
+	    for (i = 0; i < soMon; i++) {
+	        fprintf(fp, "%s\t%d", dsMonHoc[i].tenMon, dsMonHoc[i].soHocPhan);
+	        for (j = 0; j < dsMonHoc[i].soHocPhan; j++) {
+	            fprintf(fp, "\t%s\t%s", dsMonHoc[i].dsHocPhan[j].maHP, dsMonHoc[i].dsHocPhan[j].fileHP);
+	        }
+	        fprintf(fp, "\n");
+	    }
+	    fclose(fp);
+	}
+
+	bool svCoTrongFile(char tenFile[], char mssv[]) {
+	    FILE *fp = fopen(tenFile, "r");
+	    if (!fp) return false;
+	    char line[256];
+	    if (fgets(line, sizeof(line), fp)) {
+	        // skip header
+	    }
+	    while (fgets(line, sizeof(line), fp)) {
+	        if (strlen(line) < 5) continue;
+	        char curMSSV[20];
+	        if (sscanf(line, "%19s", curMSSV) >= 1) {
+	            if (strcmp(curMSSV, mssv) == 0) {
+	                fclose(fp);
+	                return true;
+	            }
+	        }
+	    }
+	    fclose(fp);
+	    return false;
+	}
+
+	bool chonHocPhan(char tenFile[], bool choPhepTongHop, const char displayTitle[]) {
+	    if (soMon == 0) {
+	        printf("\n[!] Chua co mon hoc nao trong he thong!\n");
+	        strcpy(tenFile, "");
+	        return false;
+	    }
+	    printf("\n--- %s ---\n", displayTitle);
+	    printf("Danh sach mon hoc:\n");
+	    int i;
+	    for (i = 0; i < soMon; i++) {
+	        printf("%d. %s\n", i + 1, dsMonHoc[i].tenMon);
+	    }
+	    if (choPhepTongHop) {
+	        printf("%d. Tong hop\n", soMon + 1);
+	    }
+	    printf("Chon: ");
+	    int lcMon;
+	    scanf("%d", &lcMon);
+	    if (choPhepTongHop && lcMon == soMon + 1) {
+	        strcpy(tenFile, "tonghop");
+	        return true;
+	    }
+	    if (lcMon < 1 || lcMon > soMon) {
+	        printf("[!] Lua chon khong hop le!\n");
+	        return false;
+	    }
+	    int monIdx = lcMon - 1;
+	    if (dsMonHoc[monIdx].soHocPhan == 0) {
+	        printf("[!] Mon hoc nay chua co hoc phan nao!\n");
+	        return false;
+	    }
+	    printf("\nChon hoc phan cua mon %s:\n", dsMonHoc[monIdx].tenMon);
+	    for (i = 0; i < dsMonHoc[monIdx].soHocPhan; i++) {
+	        printf("%d. %s (%s)\n", i + 1, dsMonHoc[monIdx].dsHocPhan[i].maHP, dsMonHoc[monIdx].dsHocPhan[i].fileHP);
+	    }
+	    printf("Chon: ");
+	    int lcHP;
+	    scanf("%d", &lcHP);
+	    if (lcHP < 1 || lcHP > dsMonHoc[monIdx].soHocPhan) {
+	        printf("[!] Lua chon khong hop le!\n");
+	        return false;
+	    }
+	    strcpy(tenFile, dsMonHoc[monIdx].dsHocPhan[lcHP - 1].fileHP);
+	    return true;
+	}
 	
 	bool docFile(char tenFile[]);
 	bool daCoDiem(SinhVien sv);
+	void docFileSinhVien();
+	int timSVTheoMSSV(char mssv[]);
 	
 	void tinhDiem(SinhVien *sv) {
 	    sv->dtb = (sv->lab1 + sv->lab2) * wLab 
@@ -93,26 +186,14 @@
 		else strcpy(sv->diemChu, " ");
 	}
 	void chonFileXem(char tenFile[]) {
-	    int lc;
-	    printf("\nChon file xem:\n");
-	    int i;
-	    for (i = 0; i < soMon; i++) {
-	        printf("%d. %s\n", i + 1, tenMon[i]);
-	    }
-	    printf("%d. Tong hop\nChon: ", soMon + 1);
-	    scanf("%d", &lc);
-
-	    if (lc >= 1 && lc <= soMon) {
-	        strcpy(tenFile, fileMon[lc - 1]);
-	    } else if (lc == soMon + 1) {
-	        strcpy(tenFile, "tonghop");
+	    char selected[50];
+	    if (chonHocPhan(selected, true, "CHON FILE XEM")) {
+	        strcpy(tenFile, selected);
+	        if (strcmp(tenFile, "tonghop") != 0) {
+	            docFile(tenFile);
+	        }
 	    } else {
-	        printf("Lua chon khong hop le!\n");
-	        if (soMon > 0) strcpy(tenFile, fileMon[0]);
-	        else strcpy(tenFile, "");
-	    }
-	    if (strlen(tenFile) > 0) {
-	        docFile(tenFile);
+	        strcpy(tenFile, "");
 	    }
 	}
 	void ghiFile(char tenFile[]) {
@@ -596,13 +677,29 @@ void sua() {
     } while (signal == 'c' || signal == 'C');
 }
 void tongHopFile() {
-    if (soMon == 0 || !docFile((char*)fileMon[0])) {n = 0; return;}
+    docFileSinhVien();
+    if (nSV == 0) { n = 0; return; }
+    
     SinhVien tempDS[MAX];
-    int nTemp = n;
-    int i, f, j;
-    for (i = 0; i < nTemp; i++) {
-        tempDS[i] = ds[i];
+    int nTemp = 0;
+    int i, j, f, c;
+    
+    for (i = 0; i < nSV && i < MAX; i++) {
+        strcpy(tempDS[i].maSV, dsSV[i].maSV);
+        strcpy(tempDS[i].lop, dsSV[i].lop);
+        strcpy(tempDS[i].tenSV, dsSV[i].tenSV);
+        tempDS[i].lab1 = -1;
+        tempDS[i].lab2 = -1;
+        tempDS[i].pt1 = -1;
+        tempDS[i].pt2 = -1;
+        tempDS[i].presentation = -1;
+        tempDS[i].finalTest = -1;
+        tempDS[i].dtb = -1;
+        tempDS[i].soTinChiTichLuy = 0;
+        strcpy(tempDS[i].diemChu, " ");
+        nTemp++;
     }
+    
     float tongDiemNhanTinChi[MAX];
     int tongTinChiSV[MAX];
     int soMonCompleted[MAX];
@@ -611,24 +708,36 @@ void tongHopFile() {
         tongTinChiSV[i] = 0;
         soMonCompleted[i] = 0;
     }
+    
+    float orig_wLab = wLab, orig_wPT = wPT, orig_wPre = wPre, orig_wFinal = wFinal;
+    int orig_colLocked[6];
+    for(i=0; i<6; i++) orig_colLocked[i] = colLocked[i];
+    int orig_soTinChi = soTinChi;
+    
     for (f = 0; f < soMon; f++) {
-        if (!docFile((char*)fileMon[f])) continue;
-        // docFile se load soTinChi cua mon nay vao bien toan cuc soTinChi
-        int tc = (soTinChi > 0) ? soTinChi : 1; // Fallback neu tin chi chua set
-        
-        for (i = 0; i < nTemp; i++) {
-            for (j = 0; j < n; j++) {
-                if (strcmp(tempDS[i].maSV, ds[j].maSV) == 0) {
-                    if (daCoDiem(ds[j])) {
-                        tongDiemNhanTinChi[i] += ds[j].dtb * tc;
-                        tongTinChiSV[i] += tc;
-                        soMonCompleted[i]++;
+        for (c = 0; c < dsMonHoc[f].soHocPhan; c++) {
+            if (!docFile(dsMonHoc[f].dsHocPhan[c].fileHP)) continue;
+            int tc = (soTinChi > 0) ? soTinChi : 1;
+            
+            for (i = 0; i < nTemp; i++) {
+                for (j = 0; j < n; j++) {
+                    if (strcmp(tempDS[i].maSV, ds[j].maSV) == 0) {
+                        if (daCoDiem(ds[j])) {
+                            tongDiemNhanTinChi[i] += ds[j].dtb * tc;
+                            tongTinChiSV[i] += tc;
+                            soMonCompleted[i]++;
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
     }
+    
+    wLab = orig_wLab; wPT = orig_wPT; wPre = orig_wPre; wFinal = orig_wFinal;
+    for(i=0; i<6; i++) colLocked[i] = orig_colLocked[i];
+    soTinChi = orig_soTinChi;
+    
     n = 0;
     for (i = 0; i < nTemp; i++) {
         if (soMonCompleted[i] > 0) {
@@ -639,7 +748,7 @@ void tongHopFile() {
                 ds[n].dtb = 0.0f;
             }
             ds[n].soTinChiTichLuy = tongTinChiSV[i];
-    
+            
             if (ds[n].dtb >= 8.5) strcpy(ds[n].diemChu, "A");
             else if (ds[n].dtb >= 7.0) strcpy(ds[n].diemChu, "B");
             else if (ds[n].dtb >= 5.5) strcpy(ds[n].diemChu, "C");
@@ -661,25 +770,12 @@ void tongHopFile() {
 	    printf("\n");
 	}
 	void chonFileLamViec(char tenFile[]) {
-	    int lc;
-	    printf("\nChon file lam viec:\n");
-	    int i;
-	    for (i = 0; i < soMon; i++) {
-	        printf("%d. %s\n", i + 1, tenMon[i]);
-	    }
-	    printf("Chon: ");
-	    scanf("%d", &lc);
-	
-	    if (lc >= 1 && lc <= soMon) {
-	        strcpy(tenFile, fileMon[lc - 1]);
-	    } else {
-	        printf("Lua chon khong hop le!\n");
-	        if (soMon > 0) strcpy(tenFile, fileMon[0]);
-	        else strcpy(tenFile, "");
-	    }
-	
-	    if (strlen(tenFile) > 0) {
+	    char selected[50];
+	    if (chonHocPhan(selected, false, "CHON FILE LAM VIEC")) {
+	        strcpy(tenFile, selected);
 	        docFile(tenFile);
+	    } else {
+	        printf("Giu nguyen file lam viec hien tai: %s\n", tenFile);
 	    }
 	}
 	void tangMaSV(char ma[]) {
@@ -788,14 +884,10 @@ void themSVMoi() {
     } while (signal == 'c' || signal == 'C');
 }
 
-/* === Tinh nang 2: Them sinh vien vao mon hoc === */
 void themSVVaoMonHoc() {
     char signal;
     do {
-        int lcFile, i;
-        char tenFile[50];
-        char mssv[20];
-
+        int i;
         docFilemonhoc();
         docFileSinhVien();
 
@@ -804,27 +896,62 @@ void themSVVaoMonHoc() {
             return;
         }
 
-        printf("\nChon mon hoc:\n");
+        if (soMon == 0) {
+            printf("\n[!] Chua co mon hoc nao!\n");
+            return;
+        }
+
+        printf("\n--- THEM SINH VIEN VAO MON HOC ---\n");
+        printf("Danh sach mon hoc:\n");
         for (i = 0; i < soMon; i++) {
-            printf("%d. %s\n", i + 1, tenMon[i]);
+            printf("%d. %s\n", i + 1, dsMonHoc[i].tenMon);
         }
         printf("Chon: ");
-        scanf("%d", &lcFile);
+        int lcMon;
+        scanf("%d", &lcMon);
 
-        if (lcFile < 1 || lcFile > soMon) {
+        if (lcMon < 1 || lcMon > soMon) {
             printf("\n[!] Lua chon khong hop le!\n");
             printf("\nAn c de tiep tuc, an bat ky de thoat");
             signal = getch();
             continue;
         }
 
-        strcpy(tenFile, fileMon[lcFile - 1]);
+        int monIdx = lcMon - 1;
+        if (dsMonHoc[monIdx].soHocPhan == 0) {
+            printf("\n[!] Mon hoc nay chua co hoc phan nao!\n");
+            printf("\nAn c de tiep tuc, an bat ky de thoat");
+            signal = getch();
+            continue;
+        }
+
+        printf("\nChon hoc phan cua mon %s:\n", dsMonHoc[monIdx].tenMon);
+        for (i = 0; i < dsMonHoc[monIdx].soHocPhan; i++) {
+            printf("%d. %s (%s)\n", i + 1, dsMonHoc[monIdx].dsHocPhan[i].maHP, dsMonHoc[monIdx].dsHocPhan[i].fileHP);
+        }
+        printf("Chon: ");
+        int lcHP;
+        scanf("%d", &lcHP);
+
+        if (lcHP < 1 || lcHP > dsMonHoc[monIdx].soHocPhan) {
+            printf("\n[!] Lua chon khong hop le!\n");
+            printf("\nAn c de tiep tuc, an bat ky de thoat");
+            signal = getch();
+            continue;
+        }
+
+        int hpIdx = lcHP - 1;
+        char tenFile[50];
+        strcpy(tenFile, dsMonHoc[monIdx].dsHocPhan[hpIdx].fileHP);
+
         docFile(tenFile);
 
-        printf("\n--- THEM SINH VIEN VAO MON %s ---\n", tenMon[lcFile - 1]);
+        printf("\n--- THEM SINH VIEN VAO HOC PHAN %s - MON %s ---\n", 
+               dsMonHoc[monIdx].dsHocPhan[hpIdx].maHP, dsMonHoc[monIdx].tenMon);
         printf("(Nhap MSSV de them, nhap 0 de dung)\n\n");
 
         while (1) {
+            char mssv[20];
             int idx, found;
             printf("MSSV: ");
             scanf("%19s", mssv);
@@ -838,7 +965,7 @@ void themSVVaoMonHoc() {
                 continue;
             }
 
-            /* Kiem tra da co trong mon chua */
+            /* Kiem tra da co trong hoc phan nay chua */
             found = 0;
             for (i = 0; i < n; i++) {
                 if (strcmp(ds[i].maSV, mssv) == 0) {
@@ -847,7 +974,25 @@ void themSVVaoMonHoc() {
                 }
             }
             if (found) {
-                printf("  [!] %s - %s da co trong mon nay roi!\n\n", mssv, dsSV[idx].tenSV);
+                printf("  [!] %s - %s da co trong hoc phan nay roi!\n\n", mssv, dsSV[idx].tenSV);
+                continue;
+            }
+
+            /* Kiem tra da dang ky hoc phan khac cua cung mon chua */
+            int checkHP;
+            bool registeredInOther = false;
+            for (checkHP = 0; checkHP < dsMonHoc[monIdx].soHocPhan; checkHP++) {
+                if (checkHP == hpIdx) continue;
+                if (svCoTrongFile(dsMonHoc[monIdx].dsHocPhan[checkHP].fileHP, mssv)) {
+                    printf("  [!] Vi pham! %s - %s da dang ky hoc phan %s cua mon nay roi!\n", 
+                           mssv, dsSV[idx].tenSV, dsMonHoc[monIdx].dsHocPhan[checkHP].maHP);
+                    printf("      Moi sinh vien chi duoc hoc 1 hoc phan moi mon!\n\n");
+                    registeredInOther = true;
+                    break;
+                }
+            }
+
+            if (registeredInOther) {
                 continue;
             }
 
@@ -870,7 +1015,8 @@ void themSVVaoMonHoc() {
             strcpy(ds[n].diemChu, " ");
             n++;
 
-            printf("  [OK] Da them %s - %s vao mon %s\n\n", mssv, dsSV[idx].tenSV, tenMon[lcFile - 1]);
+            printf("  [OK] Da them %s - %s vao hoc phan %s - mon %s\n\n", 
+                   mssv, dsSV[idx].tenSV, dsMonHoc[monIdx].dsHocPhan[hpIdx].maHP, dsMonHoc[monIdx].tenMon);
         }
 
         ghiFile(tenFile);
@@ -881,20 +1027,170 @@ void themSVVaoMonHoc() {
     } while (signal == 'c' || signal == 'C');
 }
 
-/* === Menu chinh: Them sinh vien === */
-void themSinhVien() {
-    int lc;
-    printf("\n===== THEM SINH VIEN =====\n");
-    printf("1. Them sinh vien moi (vao danh sach tong)\n");
-    printf("2. Them sinh vien vao mon hoc\n");
-    printf("0. Quay lai\n");
-    printf("Chon: ");
-    scanf("%d", &lc);
 
-    switch (lc) {
-        case 1: themSVMoi(); break;
-        case 2: themSVVaoMonHoc(); break;
-        default: break;
+void loaiBoSinhVienKhoiMonHoc() {
+    char file[50];
+    if (!chonHocPhan(file, false, "LOAI SINH VIEN KHOI HOC PHAN")) {
+        return;
+    }
+    docFile(file);
+    if (n == 0) {
+        printf("\nLop hoc phan nay hien tai khong co sinh vien!\n");
+        return;
+    }
+    printf("\n--- LOAI SINH VIEN KHOI HOC PHAN ---\n");
+    printf("(Nhap MSSV de loai, nhap 0 de dung)\n\n");
+    bool changed = false;
+    while (1) {
+        char mssv[20];
+        printf("MSSV: ");
+        scanf("%19s", mssv);
+        if (strcmp(mssv, "0") == 0) break;
+        
+        int idx = -1;
+        int i;
+        for (i = 0; i < n; i++) {
+            if (strcmp(ds[i].maSV, mssv) == 0) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx < 0) {
+            printf("  [!] MSSV %s khong co trong lop hoc phan nay!\n\n", mssv);
+            continue;
+        }
+        
+        // Check condition: finalTest must be < 0 (not completed)
+        if (ds[idx].finalTest >= 0) {
+            printf("  [!] Khong the loai! %s - %s da hoan thanh diem cuoi ky cua lop nay.\n\n", mssv, ds[idx].tenSV);
+            continue;
+        }
+        
+        // Remove from ds
+        char tenRemoved[50];
+        strcpy(tenRemoved, ds[idx].tenSV);
+        for (i = idx; i < n - 1; i++) {
+            ds[i] = ds[i + 1];
+        }
+        n--;
+        changed = true;
+        printf("  [OK] Da loai sinh vien %s - %s khoi hoc phan!\n\n", mssv, tenRemoved);
+    }
+    if (changed) {
+        ghiFile(file);
+        printf("\nDa cap nhat va luu lai file %s!\n", file);
+    }
+}
+
+void loaiBoSinhVienKhoiHeThong() {
+    docFileSinhVien();
+    if (nSV == 0) {
+        printf("\nDanh sach sinh vien tong hien tai rong!\n");
+        return;
+    }
+    printf("\n--- LOAI SINH VIEN KHOI HE THONG ---\n");
+    printf("(Nhap MSSV de loai, nhap 0 de dung)\n\n");
+    bool changedSV = false;
+    while (1) {
+        char mssv[20];
+        printf("MSSV: ");
+        scanf("%19s", mssv);
+        if (strcmp(mssv, "0") == 0) break;
+        
+        int idx = timSVTheoMSSV(mssv);
+        if (idx < 0) {
+            printf("  [!] MSSV %s khong ton tai trong danh sach tong!\n\n", mssv);
+            continue;
+        }
+        
+        char tenRemoved[50];
+        strcpy(tenRemoved, dsSV[idx].tenSV);
+        
+        // 1. Remove from dsSV
+        int i;
+        for (i = idx; i < nSV - 1; i++) {
+            dsSV[i] = dsSV[i + 1];
+        }
+        nSV--;
+        changedSV = true;
+        
+        // 2. Scan and remove from ALL class sections
+        int f, c;
+        for (f = 0; f < soMon; f++) {
+            for (c = 0; c < dsMonHoc[f].soHocPhan; c++) {
+                char fileHP[50];
+                strcpy(fileHP, dsMonHoc[f].dsHocPhan[c].fileHP);
+                
+                if (docFile(fileHP)) {
+                    int sectionIdx = -1;
+                    for (i = 0; i < n; i++) {
+                        if (strcmp(ds[i].maSV, mssv) == 0) {
+                            sectionIdx = i;
+                            break;
+                        }
+                    }
+                    if (sectionIdx >= 0) {
+                        for (i = sectionIdx; i < n - 1; i++) {
+                            ds[i] = ds[i + 1];
+                        }
+                        n--;
+                        ghiFile(fileHP);
+                        printf("    => Da loai MSSV %s khoi file hoc phan: %s\n", mssv, fileHP);
+                    }
+                }
+            }
+        }
+        printf("  [OK] Da loai sinh vien %s - %s khoi danh sach tong!\n\n", mssv, tenRemoved);
+    }
+    if (changedSV) {
+        ghiFileSinhVien();
+        printf("\nDa cap nhat va luu lai file sinhvien.txt!\n");
+    }
+}
+
+void loaiBoSinhVien(char tenFile[]) {
+    int lc;
+    while (1) {
+        printf("\n===== MENU LOAI BO SINH VIEN =====\n");
+        printf("1. Loai bo sinh vien ra khoi mon hoc (hoc phan)\n");
+        printf("2. Loai bo sinh vien ra khoi danh sach tong & tat ca mon hoc\n");
+        printf("0. Quay lai\n");
+        printf("Chon: ");
+        scanf("%d", &lc);
+        if (lc == 0) break;
+        if (lc == 1) {
+            loaiBoSinhVienKhoiMonHoc();
+        } else if (lc == 2) {
+            loaiBoSinhVienKhoiHeThong();
+        } else {
+            printf("[!] Lua chon khong hop le!\n");
+        }
+    }
+    // Restore the memory state of the active file
+    if (strlen(tenFile) > 0) {
+        docFile(tenFile);
+    }
+}
+
+/* === Menu chinh: Quan ly sinh vien === */
+void quanLySinhVien(char tenFile[]) {
+    int lc;
+    while (1) {
+        printf("\n===== QUAN LY SINH VIEN =====\n");
+        printf("1. Them sinh vien moi (vao danh sach tong)\n");
+        printf("2. Them sinh vien vao mon hoc\n");
+        printf("3. Loai bo sinh vien\n");
+        printf("0. Quay lai\n");
+        printf("Chon: ");
+        scanf("%d", &lc);
+        if (lc == 0) break;
+
+        switch (lc) {
+            case 1: themSVMoi(); break;
+            case 2: themSVVaoMonHoc(); break;
+            case 3: loaiBoSinhVien(tenFile); break;
+            default: printf("[!] Lua chon khong hop le!\n"); break;
+        }
     }
 }
     void Sapxep (char tenFile[]) {
@@ -916,19 +1212,11 @@ void themSinhVien() {
                 return;
             }
            
-            printf("\nChon file can sap xep:\n");
-            for (i = 0; i < soMon; i++)
-                printf("%d. %s\n", i + 1, tenMon[i]);
-            printf("Chon: ");
-            int lcFile;
-            scanf("%d", &lcFile);
-
-            if (lcFile < 1 || lcFile > soMon) {
-                printf("[!] Lua chon file khong hop le!\n");
+            char selectedFile[50];
+            if (!chonHocPhan(selectedFile, false, "CHON FILE CAN SAP XEP")) {
                 return;
             }
-
-            strcpy(tenFile, fileMon[lcFile - 1]);
+            strcpy(tenFile, selectedFile);
             if (!docFile(tenFile)) {
                 printf("[!] Khong the doc file!\n");
                 return;
@@ -1060,11 +1348,11 @@ void themSinhVien() {
     }
 
 void themMonHoc() {
-    int ch, i;
+    int ch, i, j;
     char tenMon_new[30];
-    char duongDan[60];   /* Res/xxx.dat */
     float wL, wP, wPre_new, wF;
     int soTC;
+    int soHP;
    
     while ((ch = getchar()) != '\n' && ch != EOF);
 
@@ -1079,8 +1367,10 @@ void themMonHoc() {
         return;
     }
 
+    docFilemonhoc();
+
     for (i = 0; i < soMon; i++) {
-        if (strcmp(tenMon[i], tenMon_new) == 0) {
+        if (strcmp(dsMonHoc[i].tenMon, tenMon_new) == 0) {
             printf("[!] Mon '%s' da ton tai trong danh sach!\n", tenMon_new);
             return;
         }
@@ -1091,30 +1381,8 @@ void themMonHoc() {
         return;
     }
 
-    char tenLower[30];
-    strcpy(tenLower, tenMon_new);
-    for (i = 0; tenLower[i]; i++)
-        if (tenLower[i] >= 'A' && tenLower[i] <= 'Z')
-            tenLower[i] += 32;
-    sprintf(duongDan, "Res/%s.dat", tenLower);
-
-    {
-        FILE *check = fopen(duongDan, "r");
-        if (check) {
-            fclose(check);
-            printf("[!] File '%s' da ton tai tren disk!\n", duongDan);
-            printf("    Ban co muon ghi de va dung file nay? (y/n): ");
-            ch = getch();
-            if (ch != 'y' && ch != 'Y') {
-                printf("\nDa huy.\n");
-                return;
-            }
-            printf("\n");
-        }
-    }
-
     /* Nhap so tin chi */
-    printf("\nNhap so tin chi cua mon hoc: ");
+    printf("Nhap so tin chi cua mon hoc: ");
     scanf("%d", &soTC);
     if (soTC < 1 || soTC > 10) {
         printf("[!] So tin chi khong hop le (1-10). Vui long nhap lai!\n");
@@ -1140,37 +1408,116 @@ void themMonHoc() {
         return;
     }
 
-    /* Tao file moi chi co header, khong co sinh vien nao */
-    {
+    /* Nhap so hoc phan */
+    printf("\nNhap so luong hoc phan cua mon nay: ");
+    scanf("%d", &soHP);
+    if (soHP < 1 || soHP > 10) {
+        printf("[!] So hoc phan khong hop le (1-10)!\n");
+        return;
+    }
+
+    char tenLower[30];
+    int lenLower = 0;
+    for (i = 0; tenMon_new[i]; i++) {
+        char cChar = tenMon_new[i];
+        if (cChar != ' ' && cChar != '\t') {
+            if (cChar >= 'A' && cChar <= 'Z') {
+                tenLower[lenLower++] = cChar + 32;
+            } else {
+                tenLower[lenLower++] = cChar;
+            }
+        }
+    }
+    tenLower[lenLower] = '\0';
+
+    MonHoc newMon;
+    strcpy(newMon.tenMon, tenMon_new);
+    newMon.soHocPhan = soHP;
+
+    while ((ch = getchar()) != '\n' && ch != EOF);
+
+    for (i = 0; i < soHP; i++) {
+        char maHP_new[20];
+        char duongDan[60];
+        
+        printf("  Nhap ma hoc phan %d (vd: NH25, NH26): ", i + 1);
+        fgets(maHP_new, sizeof(maHP_new), stdin);
+        maHP_new[strcspn(maHP_new, "\r\n")] = '\0';
+        
+        if (strlen(maHP_new) == 0) {
+            printf("  [!] Ma hoc phan khong duoc de trong! Vui long nhap lai.\n");
+            i--;
+            continue;
+        }
+
+        bool dup = false;
+        for (j = 0; j < i; j++) {
+            if (strcmp(newMon.dsHocPhan[j].maHP, maHP_new) == 0) {
+                dup = true;
+                break;
+            }
+        }
+        if (dup) {
+            printf("  [!] Ma hoc phan '%s' bi trung! Vui long nhap lai.\n", maHP_new);
+            i--;
+            continue;
+        }
+
+        char maHPLower[20];
+        int lenHP = 0;
+        for (j = 0; maHP_new[j]; j++) {
+            char cChar = maHP_new[j];
+            if (cChar != ' ' && cChar != '\t') {
+                if (cChar >= 'A' && cChar <= 'Z') {
+                    maHPLower[lenHP++] = cChar + 32;
+                } else {
+                    maHPLower[lenHP++] = cChar;
+                }
+            }
+        }
+        maHPLower[lenHP] = '\0';
+
+        sprintf(duongDan, "Res/%s_%s.dat", tenLower, maHPLower);
+
+        FILE *check = fopen(duongDan, "r");
+        if (check) {
+            fclose(check);
+            printf("  [!] File '%s' da ton tai tren disk!\n", duongDan);
+            printf("      Ban co muon ghi de va dung file nay? (y/n): ");
+            ch = getch();
+            printf("\n");
+            if (ch != 'y' && ch != 'Y') {
+                printf("  [!] Nhap lai hoc phan %d.\n", i + 1);
+                i--;
+                continue;
+            }
+        }
+
         FILE *fp = fopen(duongDan, "w");
         if (!fp) {
-            printf("[!] Khong the tao file '%s'. Kiem tra thu muc Res/ da ton tai chua!\n", duongDan);
-            return;
+            printf("  [!] Khong the tao file '%s'. Kiem tra thu muc Res/ da ton tai chua!\n", duongDan);
+            i--;
+            continue;
         }
-        /* Header: trong so + trang thai chot (tat ca = 0) + so tin chi */
         fprintf(fp, "%f %f %f %f 0 0 0 0 0 0 %d\n", wL, wP, wPre_new, wF, soTC);
         fclose(fp);
+
+        strcpy(newMon.dsHocPhan[i].maHP, maHP_new);
+        strcpy(newMon.dsHocPhan[i].fileHP, duongDan);
     }
 
-    strcpy(tenMon[soMon], tenMon_new);
-    strcpy(fileMon[soMon], duongDan);
+    dsMonHoc[soMon] = newMon;
     soMon++;
    
-    {
-        FILE *fp = fopen("monhoc.txt", "w");
-        if (fp) {
-            for (i = 0; i < soMon; i++)
-                fprintf(fp, "%s\t%s\n", tenMon[i], fileMon[i]);
-            fclose(fp);
-        }
-    }
+    ghiFilemonhoc();
 
-    printf("\n[OK] Da tao mon hoc '%s':\n", tenMon_new);
-    printf("     File du lieu : %s\n", duongDan);
+    printf("\n[OK] Da tao mon hoc '%s' voi %d hoc phan:\n", tenMon_new, soHP);
+    for (i = 0; i < soHP; i++) {
+        printf("  - Hoc phan: %s -> File: %s\n", newMon.dsHocPhan[i].maHP, newMon.dsHocPhan[i].fileHP);
+    }
     printf("     So tin chi   : %d\n", soTC);
     printf("     Trong so     : Lab=%.2f PT=%.2f Pre=%.2f Final=%.2f\n",
            wL, wP, wPre_new, wF);
-    printf("     Danh sach SV : Trong (them SV qua menu 'Them sinh vien')\n");
     printf("     monhoc.txt   : Da cap nhat.\n");
 }
 
@@ -1194,7 +1541,7 @@ void themMonHoc() {
 	        printf("|         1. Nhap diem                  2. Xem danh sach               |\n");
 	        printf("|         3. Sua diem                   4. Sap xep                     |\n");
 	        printf("|         5. Xem diem (MSSV)            6. Chot cot diem               |\n");
-	        printf("|         7. Them sinh vien             8. Them mon hoc moi            |\n");
+	        printf("|         7. Quan ly sinh vien          8. Them mon hoc moi            |\n");
 	        printf("|         9. Thoat                                                     |\n");
 	        printf("+----------------------------------------------------------------------+\n");
 	        printf("   Nhap so de chon tinh nang: ");
@@ -1206,18 +1553,41 @@ void themMonHoc() {
 	    break;
 	
 	       case '2': {
-	    char file[50];
-	    chonFileXem(file);
-	
-	    if (strcmp(file, "tonghop") == 0) {
+	    int subLc;
+	    printf("\n===== XEM DANH SACH =====\n");
+	    printf("1. Xem danh sach sinh vien tong\n");
+	    printf("2. Xem bang diem hoc phan\n");
+	    printf("3. Xem bang diem tong hop\n");
+	    printf("0. Quay lai\n");
+	    printf("Chon: ");
+	    scanf("%d", &subLc);
+	    if (subLc == 1) {
+	        docFileSinhVien();
+	        if (nSV == 0) {
+	            printf("\nDanh sach sinh vien tong rong!\n");
+	        } else {
+	            int i;
+	            printf("\n                       DANH SACH SINH VIEN TONG\n");
+	            printf("+-------------+-------------+-----------------------------------+\n");
+	            printf("| %-12s| %-12s| %-34s|\n", "MSSV", "LOP", "Ho va ten");
+	            printf("+-------------+-------------+-----------------------------------+\n");
+	            for (i = 0; i < nSV; i++) {
+	                printf("| %-12s| %-12s| %-34s|\n", dsSV[i].maSV, dsSV[i].lop, dsSV[i].tenSV);
+	            }
+	            printf("+-------------+-------------+-----------------------------------+\n");
+	        }
+	    } else if (subLc == 2) {
+	        char file[50];
+	        if (chonHocPhan(file, false, "CHON HOC PHAN CAN XEM")) {
+	            docFile(file);
+	            cheDoTong = 0;
+	            xemDanhSach();
+	        }
+	    } else if (subLc == 3) {
 	        tongHopFile();
 	        cheDoTong = 1;
 	        xemDanhSach();
 	        cheDoTong = 0;
-	    } else {
-	        docFile(file);
-	        cheDoTong = 0;
-	        xemDanhSach();
 	    }
 	    break;
 	}
@@ -1249,7 +1619,7 @@ void themMonHoc() {
 	}
 	
 	       case '7':
-    themSinhVien();
+    quanLySinhVien(tenFile);
     break;
 
           case '8':

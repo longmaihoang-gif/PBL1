@@ -1,8 +1,9 @@
-Toan	Res/toan.dat
-Ly	Res/ly.dat
-Hoa	Res/hoa.dat
-Van	Res/van.dat
-LichsuDang	Res/lichsudang.dat
-GDTC2	Res/gdtc2.dat
-Anh	Res/anh.dat
-Lap trinh FCG	Res/lap trinh fcg.dat
+Toan	2	NH25	Res/toan_nh25.dat	NH26	Res/toan_nh26.dat
+Ly	1	NH25	Res/ly_nh25.dat
+Giai tich 4	2	NH90	Res/giaitich4_nh90.dat	NH91	Res/giaitich4_nh91.dat
+Lap trinh FCG	3	101	Res/laptrinhfcg_101.dat	102	Res/laptrinhfcg_102.dat	103	Res/laptrinhfcg_103.dat
+Hoa	1	NH25	Res/hoa.dat
+Van	1	NH25	Res/van.dat
+LichsuDang	1	NH25	Res/lichsudang.dat
+GDTC2	1	NH25	Res/gdtc2.dat
+Anh	1	NH25	Res/anh.dat
