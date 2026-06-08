@@ -7,6 +7,7 @@
     #define MAX_MON 100
     #define MIN_TC 3
 	int cheDoTong = 0;
+	char fileHPHienTai[50] = "";
 
 	typedef struct {
 	    char maSV[20];
@@ -23,7 +24,7 @@
 		int colLocked[6] = {0, 0, 0, 0, 0, 0};
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
-	int soTinChi = 0;
+	int soSVToiDa = 0;
 	
 	typedef struct {
 	    char maHP[20];
@@ -204,7 +205,7 @@
         fprintf(fp, "%f %f %f %f %d %d %d %d %d %d %d\n", 
                     wLab, wPT, wPre, wFinal,
                     colLocked[0], colLocked[1], colLocked[2], colLocked[3], colLocked[4], colLocked[5],
-                    soTinChi);
+                    soSVToiDa);
     
         for (i = 0; i < n; i++) {
             fprintf(fp, "%s %s %s %f %f %f %f %f %f\n", 
@@ -219,6 +220,7 @@
         fclose(fp);
     }
     bool docFile(char tenFile[]) {
+        strcpy(fileHPHienTai, tenFile);
         FILE *fp = fopen(tenFile, "r");
         if (!fp) {
             printf("File khong ton tai\n");
@@ -236,10 +238,10 @@
             if (parsed < 4) {
                wLab = 0.1; wPT = 0.1; wPre = 0.2; wFinal = 0.4;
                int ci; for(ci=0;ci<6;ci++) colLocked[ci]=0;
-               soTinChi = 0;
+               soSVToiDa = 0;
                rewind(fp); 
             } else {
-                soTinChi = (parsed >= 11) ? tc : 0;
+                soSVToiDa = (parsed >= 11) ? tc : 0;
             }
         }
 
@@ -449,16 +451,32 @@ void xemDanhSach() {
     if (n == 0) { printf("\nDanh sach trong!\n"); return; }
 
     if (cheDoTong == 0) {
-        printf("\n                                              DANH SACH SINH VIEN\n");
-        printf("+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
-        printf("| %-12s| %-12s| %-34s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-5s|\n",
-               "MSSV", "LOP", "Ho va ten", "Lab1", "Lab2", "PT1", "PT2", "Pre", "Final", "DTB", "Loai");
-        printf("+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
+        char tenLopHP[100] = "";
+        int foundHP = 0;
+        int m, h;
+        for (m = 0; m < soMon; m++) {
+            for (h = 0; h < dsMonHoc[m].soHocPhan; h++) {
+                if (strcmp(dsMonHoc[m].dsHocPhan[h].fileHP, fileHPHienTai) == 0) {
+                    sprintf(tenLopHP, "%s_%s", dsMonHoc[m].tenMon, dsMonHoc[m].dsHocPhan[h].maHP);
+                    foundHP = 1;
+                    break;
+                }
+            }
+            if (foundHP) break;
+        }
+        if (!foundHP) {
+            strcpy(tenLopHP, "SINH VIEN");
+        }
+        printf("\n                                              DANH SACH LOP HOC PHAN: %s\n", tenLopHP);
+        printf("+-----+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
+        printf("| %-4s| %-12s| %-12s| %-34s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-5s|\n",
+               "STT", "MSSV", "LOP", "Ho va ten", "Lab1", "Lab2", "PT1", "PT2", "Pre", "Final", "DTB", "Loai");
+        printf("+-----+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
     } else {
         printf("\n                               DANH SACH TONG HOP\n");
-        printf("+-------------+-------------+-----------------------------------+---------------+----------+\n");
-        printf("| %-12s| %-12s| %-34s| %-14s| %-9s|\n", "MSSV", "LOP", "Ho va ten", "DTB", "Loai");
-        printf("+-------------+-------------+-----------------------------------+---------------+----------+\n");
+        printf("+-----+-------------+-------------+-----------------------------------+---------------+----------+\n");
+        printf("| %-4s| %-12s| %-12s| %-34s| %-14s| %-9s|\n", "STT", "MSSV", "LOP", "Ho va ten", "DTB", "Loai");
+        printf("+-----+-------------+-------------+-----------------------------------+---------------+----------+\n");
     }
 
     int demA = 0, demB = 0, demC = 0, demD = 0, demF = 0, completed = 0;
@@ -476,12 +494,11 @@ void xemDanhSach() {
             if (ds[i].presentation < 0) strcpy(sPre, " "); else sprintf(sPre, "%.1f", ds[i].presentation);
             if (ds[i].finalTest < 0) strcpy(sFinal, " "); else sprintf(sFinal, "%.1f", ds[i].finalTest);
 
-            
-            printf("| %-12s| %-12s| %-34s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-5s|\n",
-                   ds[i].maSV, ds[i].lop, ds[i].tenSV, sLab1, sLab2, sPt1, sPt2, sPre, sFinal, sDTB, ds[i].diemChu);
+            printf("| %-4d| %-12s| %-12s| %-34s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-6s| %-5s|\n",
+                   i + 1, ds[i].maSV, ds[i].lop, ds[i].tenSV, sLab1, sLab2, sPt1, sPt2, sPre, sFinal, sDTB, ds[i].diemChu);
         } else {
-            printf("| %-12s| %-12s| %-34s| %-14s| %-9s|\n",
-                   ds[i].maSV, ds[i].lop, ds[i].tenSV, sDTB, daCoDiem(ds[i]) ? ds[i].diemChu : " ");
+            printf("| %-4d| %-12s| %-12s| %-34s| %-14s| %-9s|\n",
+                   i + 1, ds[i].maSV, ds[i].lop, ds[i].tenSV, sDTB, daCoDiem(ds[i]) ? ds[i].diemChu : " ");
         }
 
         if (strcmp(ds[i].diemChu, "A") == 0) { demA++; completed++; }
@@ -492,9 +509,9 @@ void xemDanhSach() {
     }
     
     if (cheDoTong == 0)
-        printf("+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
+        printf("+-----+-------------+-------------+-----------------------------------+-------+-------+-------+-------+-------+-------+-------+------+\n");
     else
-        printf("+-------------+-------------+-----------------------------------+---------------+----------+\n");
+        printf("+-----+-------------+-------------+-----------------------------------+---------------+----------+\n");
 
     printf("\nTY LE XEP LOAI:\n");
     printf("A: %.2f%% | B: %.2f%% | C: %.2f%% | D: %.2f%% | F: %.2f%%\n",
@@ -712,12 +729,12 @@ void tongHopFile() {
     float orig_wLab = wLab, orig_wPT = wPT, orig_wPre = wPre, orig_wFinal = wFinal;
     int orig_colLocked[6];
     for(i=0; i<6; i++) orig_colLocked[i] = colLocked[i];
-    int orig_soTinChi = soTinChi;
+    int orig_soSVToiDa = soSVToiDa;
     
     for (f = 0; f < soMon; f++) {
         for (c = 0; c < dsMonHoc[f].soHocPhan; c++) {
             if (!docFile(dsMonHoc[f].dsHocPhan[c].fileHP)) continue;
-            int tc = (soTinChi > 0) ? soTinChi : 1;
+            int tc = (soSVToiDa > 0) ? soSVToiDa : 1;
             
             for (i = 0; i < nTemp; i++) {
                 for (j = 0; j < n; j++) {
@@ -736,7 +753,7 @@ void tongHopFile() {
     
     wLab = orig_wLab; wPT = orig_wPT; wPre = orig_wPre; wFinal = orig_wFinal;
     for(i=0; i<6; i++) colLocked[i] = orig_colLocked[i];
-    soTinChi = orig_soTinChi;
+    soSVToiDa = orig_soSVToiDa;
     
     n = 0;
     for (i = 0; i < nTemp; i++) {
@@ -996,8 +1013,8 @@ void themSVVaoMonHoc() {
                 continue;
             }
 
-            if (n >= MAX) {
-                printf("  [!] Danh sach day! Khong the them.\n");
+            if (n >= soSVToiDa) {
+                printf("  [!] Lop hoc phan da dat so luong sinh vien toi da (%d)! Khong the them.\n", soSVToiDa);
                 break;
             }
 
@@ -1351,7 +1368,7 @@ void themMonHoc() {
     int ch, i, j;
     char tenMon_new[30];
     float wL, wP, wPre_new, wF;
-    int soTC;
+    int soSVMax;
     int soHP;
    
     while ((ch = getchar()) != '\n' && ch != EOF);
@@ -1381,11 +1398,11 @@ void themMonHoc() {
         return;
     }
 
-    /* Nhap so tin chi */
-    printf("Nhap so tin chi cua mon hoc: ");
-    scanf("%d", &soTC);
-    if (soTC < 1 || soTC > 10) {
-        printf("[!] So tin chi khong hop le (1-10). Vui long nhap lai!\n");
+    /* Nhap so luong sinh vien toi da */
+    printf("Nhap so luong sinh vien toi da cua hoc phan: ");
+    scanf("%d", &soSVMax);
+    if (soSVMax < 1 || soSVMax > MAX) {
+        printf("[!] So luong sinh vien toi da khong hop le (1-%d). Vui long nhap lai!\n", MAX);
         return;
     }
 
@@ -1499,7 +1516,7 @@ void themMonHoc() {
             i--;
             continue;
         }
-        fprintf(fp, "%f %f %f %f 0 0 0 0 0 0 %d\n", wL, wP, wPre_new, wF, soTC);
+        fprintf(fp, "%f %f %f %f 0 0 0 0 0 0 %d\n", wL, wP, wPre_new, wF, soSVMax);
         fclose(fp);
 
         strcpy(newMon.dsHocPhan[i].maHP, maHP_new);
@@ -1515,7 +1532,7 @@ void themMonHoc() {
     for (i = 0; i < soHP; i++) {
         printf("  - Hoc phan: %s -> File: %s\n", newMon.dsHocPhan[i].maHP, newMon.dsHocPhan[i].fileHP);
     }
-    printf("     So tin chi   : %d\n", soTC);
+    printf("     So SV toi da : %d\n", soSVMax);
     printf("     Trong so     : Lab=%.2f PT=%.2f Pre=%.2f Final=%.2f\n",
            wL, wP, wPre_new, wF);
     printf("     monhoc.txt   : Da cap nhat.\n");
@@ -1557,7 +1574,6 @@ void themMonHoc() {
 	    printf("\n===== XEM DANH SACH =====\n");
 	    printf("1. Xem danh sach sinh vien tong\n");
 	    printf("2. Xem bang diem hoc phan\n");
-	    printf("3. Xem bang diem tong hop\n");
 	    printf("0. Quay lai\n");
 	    printf("Chon: ");
 	    scanf("%d", &subLc);
@@ -1583,11 +1599,6 @@ void themMonHoc() {
 	            cheDoTong = 0;
 	            xemDanhSach();
 	        }
-	    } else if (subLc == 3) {
-	        tongHopFile();
-	        cheDoTong = 1;
-	        xemDanhSach();
-	        cheDoTong = 0;
 	    }
 	    break;
 	}
