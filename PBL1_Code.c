@@ -106,7 +106,7 @@
 	    if (!fp) return false;
 	    char line[256];
 	    if (fgets(line, sizeof(line), fp)) {
-	        // skip header
+	        
 	    }
 	    while (fgets(line, sizeof(line), fp)) {
 	        if (strlen(line) < 5) continue;
@@ -817,7 +817,7 @@ void tongHopFile() {
         ma[0] = '1';
         strcpy(ma + 1, temp);
     }
-/* === Doc/Ghi file sinhvien.txt (danh sach tong) === */
+
 void docFileSinhVien() {
     FILE *fp = fopen("sinhvien.txt", "r");
     char line[256];
@@ -859,7 +859,7 @@ int timSVTheoMSSV(char mssv[]) {
     return -1;
 }
 
-/* === Tinh nang 1: Them sinh vien moi vao danh sach === */
+
 void themSVMoi() {
     char signal;
     do {
@@ -975,14 +975,14 @@ void themSVVaoMonHoc() {
 
             if (strcmp(mssv, "0") == 0) break;
 
-            /* Kiem tra ton tai trong danh sach tong */
+            
             idx = timSVTheoMSSV(mssv);
             if (idx < 0) {
                 printf("  [!] MSSV %s khong ton tai trong danh sach sinh vien!\n\n", mssv);
                 continue;
             }
 
-            /* Kiem tra da co trong hoc phan nay chua */
+            
             found = 0;
             for (i = 0; i < n; i++) {
                 if (strcmp(ds[i].maSV, mssv) == 0) {
@@ -995,7 +995,7 @@ void themSVVaoMonHoc() {
                 continue;
             }
 
-            /* Kiem tra da dang ky hoc phan khac cua cung mon chua */
+          
             int checkHP;
             bool registeredInOther = false;
             for (checkHP = 0; checkHP < dsMonHoc[monIdx].soHocPhan; checkHP++) {
@@ -1018,7 +1018,7 @@ void themSVVaoMonHoc() {
                 break;
             }
 
-            /* Them sinh vien vao mang diem - 6 cot diem mac dinh -1 */
+          
             strcpy(ds[n].maSV, mssv);
             strcpy(ds[n].lop, dsSV[idx].lop);
             strcpy(ds[n].tenSV, dsSV[idx].tenSV);
@@ -1077,13 +1077,13 @@ void loaiBoSinhVienKhoiMonHoc() {
             continue;
         }
         
-        // Check condition: finalTest must be < 0 (not completed)
+        
         if (ds[idx].finalTest >= 0) {
             printf("  [!] Khong the loai! %s - %s da hoan thanh diem cuoi ky cua lop nay.\n\n", mssv, ds[idx].tenSV);
             continue;
         }
         
-        // Remove from ds
+       
         char tenRemoved[50];
         strcpy(tenRemoved, ds[idx].tenSV);
         for (i = idx; i < n - 1; i++) {
@@ -1123,7 +1123,7 @@ void loaiBoSinhVienKhoiHeThong() {
         char tenRemoved[50];
         strcpy(tenRemoved, dsSV[idx].tenSV);
         
-        // 1. Remove from dsSV
+        
         int i;
         for (i = idx; i < nSV - 1; i++) {
             dsSV[i] = dsSV[i + 1];
@@ -1131,7 +1131,7 @@ void loaiBoSinhVienKhoiHeThong() {
         nSV--;
         changedSV = true;
         
-        // 2. Scan and remove from ALL class sections
+       
         int f, c;
         for (f = 0; f < soMon; f++) {
             for (c = 0; c < dsMonHoc[f].soHocPhan; c++) {
@@ -1183,13 +1183,13 @@ void loaiBoSinhVien(char tenFile[]) {
             printf("[!] Lua chon khong hop le!\n");
         }
     }
-    // Restore the memory state of the active file
+
     if (strlen(tenFile) > 0) {
         docFile(tenFile);
     }
 }
 
-/* === Menu chinh: Quan ly sinh vien === */
+
 void quanLySinhVien(char tenFile[]) {
     int lc;
     while (1) {
@@ -1374,31 +1374,38 @@ void themMonHoc() {
     while ((ch = getchar()) != '\n' && ch != EOF);
 
     printf("\n===== THEM MON HOC MOI =====\n");
-   
-    printf("Nhap ten mon hoc (vd: Tin, Anh, ...): ");
-    fgets(tenMon_new, sizeof(tenMon_new), stdin);
-    tenMon_new[strcspn(tenMon_new, "\r\n")] = '\0';
 
-    if (strlen(tenMon_new) == 0) {
-        printf("[!] Ten mon khong duoc de trong!\n");
-        return;
-    }
-
-    docFilemonhoc();
-
-    for (i = 0; i < soMon; i++) {
-        if (strcmp(dsMonHoc[i].tenMon, tenMon_new) == 0) {
-            printf("[!] Mon '%s' da ton tai trong danh sach!\n", tenMon_new);
-            return;
-        }
-    }
+    docFilemonhoc(); 
 
     if (soMon >= MAX_MON) {
         printf("[!] Da dat toi da so mon hoc!\n");
         return;
     }
 
-    /* Nhap so luong sinh vien toi da */
+    
+    bool trung = true;
+    do {
+        printf("Nhap ten mon hoc (vd: Tin, Anh, ...): ");
+        fgets(tenMon_new, sizeof(tenMon_new), stdin);
+        tenMon_new[strcspn(tenMon_new, "\r\n")] = '\0';
+
+        if (strlen(tenMon_new) == 0) {
+            printf("[!] Ten mon khong duoc de trong! Vui long nhap lai.\n");
+            trung = true;
+            continue;
+        }
+
+        trung = false;
+        for (i = 0; i < soMon; i++) {
+            if (strcmp(dsMonHoc[i].tenMon, tenMon_new) == 0) {
+                printf("[!] Mon '%s' da ton tai! Vui long nhap ten khac.\n", tenMon_new);
+                trung = true;
+                break;
+            }
+        }
+    } while (trung);
+
+    
     printf("Nhap so luong sinh vien toi da cua hoc phan: ");
     scanf("%d", &soSVMax);
     if (soSVMax < 1 || soSVMax > MAX) {
@@ -1406,26 +1413,28 @@ void themMonHoc() {
         return;
     }
 
-    /* Nhap trong so */
-    while ((ch = getchar()) != '\n' && ch != EOF);
-    printf("\nNhap trong so (tong = 1.0):\n");
-    printf("  w_Lab  (moi lab, co 2 bai) : ");
-    scanf("%f", &wL);
-    printf("  w_PT   (moi PT,  co 2 bai) : ");
-    scanf("%f", &wP);
-    printf("  w_Pre  (Presentation)       : ");
-    scanf("%f", &wPre_new);
-    printf("  w_Final (Final Test)        : ");
-    scanf("%f", &wF);
+    
+    float tong;
+    do {
+        while ((ch = getchar()) != '\n' && ch != EOF);
+        printf("\nNhap trong so (tong = 1.0):\n");
+        printf("  w_Lab  (moi lab, co 2 bai) : ");
+        scanf("%f", &wL);
+        printf("  w_PT   (moi PT,  co 2 bai) : ");
+        scanf("%f", &wP);
+        printf("  w_Pre  (Presentation)       : ");
+        scanf("%f", &wPre_new);
+        printf("  w_Final (Final Test)        : ");
+        scanf("%f", &wF);
 
-    float tong = wL * 2 + wP * 2 + wPre_new + wF;
-    printf("  => Tong kiem tra: %.2f (phai = 1.0)\n", tong);
-    if (tong < 0.99f || tong > 1.01f) {
-        printf("[!] Tong trong so != 1.0. Vui long nhap lai!\n");
-        return;
-    }
+        tong = wL * 2 + wP * 2 + wPre_new + wF;
+        printf("  => Tong kiem tra: %.2f (phai = 1.0)\n", tong);
+        if (tong < 0.99f || tong > 1.01f) {
+            printf("[!] Tong trong so != 1.0. Vui long nhap lai!\n");
+        }
+    } while (tong < 0.99f || tong > 1.01f);
 
-    /* Nhap so hoc phan */
+  
     printf("\nNhap so luong hoc phan cua mon nay: ");
     scanf("%d", &soHP);
     if (soHP < 1 || soHP > 10) {
