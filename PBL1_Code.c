@@ -5,6 +5,8 @@
 	#include <stdbool.h>
 	#define MAX 100
     #define MAX_MON 100
+    #define MAX_HP 20
+
 	int cheDoTong = 0;
 	char fileHPHienTai[50] = "";
 
@@ -19,7 +21,7 @@
 	
 	SinhVien ds[MAX];
 	int n = 0;
-		int colLocked[6] = {0, 0, 0, 0, 0, 0};
+	int colLocked[6] = {0, 0, 0, 0, 0, 0};
 	char *tenCotGlobal[] = {"Lab1", "Lab2", "PT1", "PT2", "Presentation", "Final"};
 	float wLab, wPT, wPre, wFinal;
 	int soSVToiDa = 0;
@@ -32,7 +34,7 @@
 	typedef struct {
 	    char tenMon[30];
 	    int soHocPhan;
-	    HocPhan dsHocPhan[10];
+	    HocPhan dsHocPhan[MAX_HP];
 	} MonHoc;
 
 	MonHoc dsMonHoc[MAX_MON];
@@ -68,9 +70,13 @@
 	        dsMonHoc[soMon].tenMon[29] = '\0';
 	        token = strtok(NULL, "\t");
 	        if (!token) continue;
-	        dsMonHoc[soMon].soHocPhan = atoi(token);
+	        int tempSoHP = atoi(token);
+	        if (tempSoHP > MAX_HP) {
+	            tempSoHP = MAX_HP;
+	        }
+	        dsMonHoc[soMon].soHocPhan = tempSoHP;
 	        int i;
-	        for (i = 0; i < dsMonHoc[soMon].soHocPhan && i < 10; i++) {
+	        for (i = 0; i < dsMonHoc[soMon].soHocPhan; i++) {
 	            token = strtok(NULL, "\t");
 	            if (!token) break;
 	            strncpy(dsMonHoc[soMon].dsHocPhan[i].maHP, token, 19);
@@ -80,6 +86,7 @@
 	            strncpy(dsMonHoc[soMon].dsHocPhan[i].fileHP, token, 49);
 	            dsMonHoc[soMon].dsHocPhan[i].fileHP[49] = '\0';
 	        }
+	        dsMonHoc[soMon].soHocPhan = i;
 	        soMon++;
 	    }
 	    fclose(fp);
@@ -90,8 +97,10 @@
 	    if (!fp) return;
 	    int i, j;
 	    for (i = 0; i < soMon; i++) {
-	        fprintf(fp, "%s\t%d", dsMonHoc[i].tenMon, dsMonHoc[i].soHocPhan);
-	        for (j = 0; j < dsMonHoc[i].soHocPhan; j++) {
+	        int limit = dsMonHoc[i].soHocPhan;
+	        if (limit > MAX_HP) limit = MAX_HP;
+	        fprintf(fp, "%s\t%d", dsMonHoc[i].tenMon, limit);
+	        for (j = 0; j < limit; j++) {
 	            fprintf(fp, "\t%s\t%s", dsMonHoc[i].dsHocPhan[j].maHP, dsMonHoc[i].dsHocPhan[j].fileHP);
 	        }
 	        fprintf(fp, "\n");
@@ -230,6 +239,9 @@
                rewind(fp); 
             } else {
                 soSVToiDa = (parsed >= 11) ? tc : 0;
+                if (soSVToiDa > MAX) {
+                    soSVToiDa = MAX;
+                }
             }
         }
 
@@ -1288,8 +1300,8 @@ void themMonHoc() {
   
     printf("\nNhap so luong hoc phan cua mon nay: ");
     scanf("%d", &soHP);
-    if (soHP < 1 || soHP > 10) {
-        printf("[!] So hoc phan khong hop le (1-10)!\n");
+    if (soHP < 1 || soHP > MAX_HP) {
+        printf("[!] So hoc phan khong hop le (1-%d)!\n", MAX_HP);
         return;
     }
 
