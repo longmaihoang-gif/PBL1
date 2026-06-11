@@ -5,7 +5,6 @@
 	#include <stdbool.h>
 	#define MAX 100
     #define MAX_MON 100
-    #define MIN_TC 3
 	int cheDoTong = 0;
 	char fileHPHienTai[50] = "";
 
@@ -16,7 +15,6 @@
 	    float lab1, lab2, pt1, pt2, presentation, finalTest;
 	    float dtb;
 	    char diemChu[3];
-	    int soTinChiTichLuy;
 	} SinhVien;
 	
 	SinhVien ds[MAX];
@@ -186,17 +184,7 @@
 	    else if (daCoDiem(*sv)) strcpy(sv->diemChu, "F");
 		else strcpy(sv->diemChu, " ");
 	}
-	void chonFileXem(char tenFile[]) {
-	    char selected[50];
-	    if (chonHocPhan(selected, true, "CHON FILE XEM")) {
-	        strcpy(tenFile, selected);
-	        if (strcmp(tenFile, "tonghop") != 0) {
-	            docFile(tenFile);
-	        }
-	    } else {
-	        strcpy(tenFile, "");
-	    }
-	}
+
 	void ghiFile(char tenFile[]) {
         FILE *fp = fopen(tenFile, "w"); 
         int i;
@@ -519,41 +507,7 @@ void xemDanhSach() {
            completed ? demC * 100.0 / completed : 0, completed ? demD * 100.0 / completed : 0, 
            completed ? demF * 100.0 / completed : 0);
     
-    if (cheDoTong == 1) {
-        printf("\n                    *===== DANH SACH HOC BONG =====*\n\n");
-    
-        SinhVien temp[MAX];
-        int countHB = 0;
-        for (i = 0; i < n; i++) {
-            if (ds[i].soTinChiTichLuy >= MIN_TC) {
-                temp[countHB++] = ds[i];
-            }
-        }
-    
-        int j;
-        for (i = 0; i < countHB - 1; i++) {
-            for (j = i + 1; j < countHB; j++) {
-                if (temp[i].dtb < temp[j].dtb) {
-                    SinhVien t = temp[i];
-                    temp[i] = temp[j];
-                    temp[j] = t;
-                }
-            }
-        }
-    
-        int limit = countHB < 9 ? countHB : 9;
-    
-        for (i = 0; i < limit; i++) {
-            if (temp[i].dtb < 0) break;
-            char loaiHB;
-            if (i < 3) loaiHB = 'A';
-            else if (i < 6) loaiHB = 'B';
-            else loaiHB = 'C';
-    
-            printf("| %-12s| %-12s| %-25s| DTB: %-5.2f | TC: %-2d | Hoc bong: %c |\n",
-                   temp[i].maSV, temp[i].lop, temp[i].tenSV, temp[i].dtb, temp[i].soTinChiTichLuy, loaiHB);
-        }
-    }
+
 }
 	void xemDiemChiTiet() {
         char signal;
@@ -693,89 +647,7 @@ void sua() {
     signal = getch();
     } while (signal == 'c' || signal == 'C');
 }
-void tongHopFile() {
-    docFileSinhVien();
-    if (nSV == 0) { n = 0; return; }
-    
-    SinhVien tempDS[MAX];
-    int nTemp = 0;
-    int i, j, f, c;
-    
-    for (i = 0; i < nSV && i < MAX; i++) {
-        strcpy(tempDS[i].maSV, dsSV[i].maSV);
-        strcpy(tempDS[i].lop, dsSV[i].lop);
-        strcpy(tempDS[i].tenSV, dsSV[i].tenSV);
-        tempDS[i].lab1 = -1;
-        tempDS[i].lab2 = -1;
-        tempDS[i].pt1 = -1;
-        tempDS[i].pt2 = -1;
-        tempDS[i].presentation = -1;
-        tempDS[i].finalTest = -1;
-        tempDS[i].dtb = -1;
-        tempDS[i].soTinChiTichLuy = 0;
-        strcpy(tempDS[i].diemChu, " ");
-        nTemp++;
-    }
-    
-    float tongDiemNhanTinChi[MAX];
-    int tongTinChiSV[MAX];
-    int soMonCompleted[MAX];
-    for (i = 0; i < nTemp; i++) {
-        tongDiemNhanTinChi[i] = 0.0f;
-        tongTinChiSV[i] = 0;
-        soMonCompleted[i] = 0;
-    }
-    
-    float orig_wLab = wLab, orig_wPT = wPT, orig_wPre = wPre, orig_wFinal = wFinal;
-    int orig_colLocked[6];
-    for(i=0; i<6; i++) orig_colLocked[i] = colLocked[i];
-    int orig_soSVToiDa = soSVToiDa;
-    
-    for (f = 0; f < soMon; f++) {
-        for (c = 0; c < dsMonHoc[f].soHocPhan; c++) {
-            if (!docFile(dsMonHoc[f].dsHocPhan[c].fileHP)) continue;
-            int tc = (soSVToiDa > 0) ? soSVToiDa : 1;
-            
-            for (i = 0; i < nTemp; i++) {
-                for (j = 0; j < n; j++) {
-                    if (strcmp(tempDS[i].maSV, ds[j].maSV) == 0) {
-                        if (daCoDiem(ds[j])) {
-                            tongDiemNhanTinChi[i] += ds[j].dtb * tc;
-                            tongTinChiSV[i] += tc;
-                            soMonCompleted[i]++;
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    
-    wLab = orig_wLab; wPT = orig_wPT; wPre = orig_wPre; wFinal = orig_wFinal;
-    for(i=0; i<6; i++) colLocked[i] = orig_colLocked[i];
-    soSVToiDa = orig_soSVToiDa;
-    
-    n = 0;
-    for (i = 0; i < nTemp; i++) {
-        if (soMonCompleted[i] > 0) {
-            ds[n] = tempDS[i];
-            if (tongTinChiSV[i] > 0) {
-                ds[n].dtb = tongDiemNhanTinChi[i] / (float)tongTinChiSV[i];
-            } else {
-                ds[n].dtb = 0.0f;
-            }
-            ds[n].soTinChiTichLuy = tongTinChiSV[i];
-            
-            if (ds[n].dtb >= 8.5) strcpy(ds[n].diemChu, "A");
-            else if (ds[n].dtb >= 7.0) strcpy(ds[n].diemChu, "B");
-            else if (ds[n].dtb >= 5.5) strcpy(ds[n].diemChu, "C");
-            else if (ds[n].dtb >= 4.0) strcpy(ds[n].diemChu, "D");
-            else strcpy(ds[n].diemChu, "F");
-            n++;
-        }
-    }
-    if (n == 0) printf("\n[!] Khong tim thay sinh vien nao co du diem de tong hop!\n");
-}
+
 	void UI_Welcome() {
 	    printf("______________________________________________________________________________________________________\n");
 	    printf("|                                                                                                    |\n");
@@ -795,28 +667,7 @@ void tongHopFile() {
 	        printf("Giu nguyen file lam viec hien tai: %s\n", tenFile);
 	    }
 	}
-	void tangMaSV(char ma[]) {
-        int len = strlen(ma);
-        int i = len - 1;
 
-        while (i >= 0) {
-            if (ma[i] >= '0' && ma[i] <= '8') {
-                ma[i]++;
-                return;
-            }
-            else if (ma[i] == '9') {
-                ma[i] = '0';
-                i--;
-            }
-           else return;
-        }
-   
-        char temp[20];
-         strcpy(temp, ma);
-
-        ma[0] = '1';
-        strcpy(ma + 1, temp);
-    }
 
 void docFileSinhVien() {
     FILE *fp = fopen("sinhvien.txt", "r");

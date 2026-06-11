@@ -12,7 +12,6 @@
 
 #define MAX 100
 #define MAX_MON 100
-#define MIN_TC 3
 
 // ============================================================================
 // PART 1: GIỮ NGUYÊN TOÀN BỘ STRUCT VÀ BIẾN GLOBAL TỪ FILE C CŨ
@@ -27,7 +26,6 @@ typedef struct {
     float lab1, lab2, pt1, pt2, presentation, finalTest;
     float dtb;
     char diemChu[3];
-    int soTinChiTichLuy;
 } SinhVien;
 
 SinhVien ds[MAX];
