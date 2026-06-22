@@ -308,8 +308,12 @@ int main() {
 
     // 2. Cấu hình hệ thống cửa sổ đồ họa GLFW & OpenGL
     if (!glfwInit()) return 1;
-    GLFWwindow* window = glfwCreateWindow(1920, 1080, "PBL1: He thong Quan ly Diem Sinh vien", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1600, 900, "PBL1: Hệ thống Quản lý Điểm Sinh viên", NULL, NULL);
     if (window == NULL) return 1;
+    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    if (mode) {
+        glfwSetWindowPos(window, (mode->width - 1600) / 2, (mode->height - 900) / 2);
+    }
     glfwMakeContextCurrent(window);
 
 #ifdef _WIN32
@@ -327,7 +331,17 @@ int main() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.FontGlobalScale = 2.0f;
+    
+    // Tải font chữ tahoma.ttf từ thư mục dự án
+    ImFont* mainFont = io.Fonts->AddFontFromFileTTF("tahoma.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesVietnamese());
+    if (mainFont == NULL) {
+        printf("WARNING: Khong the load tahoma.ttf! Dang dung font mac dinh.\n");
+        io.Fonts->AddFontDefault();
+    } else {
+        printf("SUCCESS: Da tai thanh cong tahoma.ttf!\n");
+    }
+
+    io.FontGlobalScale = 1.2f;
     ImGui::StyleColorsDark(); 
     ImGuiStyle& style = ImGui::GetStyle();
 
@@ -426,35 +440,176 @@ colors[ImGuiCol_TableRowBgAlt]    = ImVec4(0.11f, 0.14f, 0.20f, 1.0f);
         // --------------------------------------------------------------------
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(350, display_h - 20), ImGuiCond_Always);
-        ImGui::Begin("Thanh Dieu Huong", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+        ImGui::Begin("Thanh Điều Hướng", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
         
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "PBL1: QUAN LY DIEM SINH VIEN");
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "PBL1: QUẢN LÝ ĐIỂM SINH VIÊN");
         ImGui::Separator();
         ImGui::Separator();
-if (ImGui::Button("Xem danh sach tong", ImVec2(-FLT_MIN, 0))) {
+if (ImGui::Button("Xem danh sách tổng", ImVec2(-FLT_MIN, 0))) {
     ImGui::OpenPopup("DanhSachTong");
 }
 if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-    ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "DANH SACH SINH VIEN TONG (%d SV)", nSV);
+    static char confirm_xoa_mssv[20] = "";
+    static char confirm_xoa_ten[50] = "";
+    static int confirm_xoa_idx = -1;
+    static bool trigger_open_popup = false;
+
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "DANH SÁCH SINH VIÊN TỔNG (%d SV)", nSV);
     ImGui::Separator();
-    if (ImGui::BeginTable("BangTong", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(900, 400))) {
+    if (ImGui::BeginTable("BangTong", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(1050, 400))) {
         ImGui::TableSetupColumn("MSSV", ImGuiTableColumnFlags_WidthFixed, 180.0f);
-        ImGui::TableSetupColumn("Ho va Ten", ImGuiTableColumnFlags_WidthFixed, 400.0f);
-        ImGui::TableSetupColumn("Lop", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+        ImGui::TableSetupColumn("Họ và Tên", ImGuiTableColumnFlags_WidthFixed, 400.0f);
+        ImGui::TableSetupColumn("Lớp", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+        ImGui::TableSetupColumn("Thao tác", ImGuiTableColumnFlags_WidthFixed, 150.0f);
         ImGui::TableHeadersRow();
         for (int i = 0; i < nSV; i++) {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0); ImGui::Text("%s", dsSV[i].maSV);
             ImGui::TableSetColumnIndex(1); ImGui::Text("%s", dsSV[i].tenSV);
             ImGui::TableSetColumnIndex(2); ImGui::Text("%s", dsSV[i].lop);
+            ImGui::TableSetColumnIndex(3);
+            char btn_id[32];
+            sprintf(btn_id, "Xóa##sys_%d", i);
+            
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.7f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.1f, 0.1f, 1.0f));
+            
+            if (ImGui::Button(btn_id, ImVec2(-FLT_MIN, 0))) {
+                strcpy(confirm_xoa_mssv, dsSV[i].maSV);
+                strcpy(confirm_xoa_ten, dsSV[i].tenSV);
+                confirm_xoa_idx = i;
+                trigger_open_popup = true;
+            }
+            ImGui::PopStyleColor(3);
         }
         ImGui::EndTable();
     }
-    if (ImGui::Button("Dong", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+    if (ImGui::Button("Đóng", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+
+    if (trigger_open_popup) {
+        ImGui::OpenPopup("ConfirmDeleteSystemSV");
+        trigger_open_popup = false;
+    }
+
+    // Popup xác nhận xóa sinh viên hệ thống kèm theo cảnh báo
+    if (ImGui::BeginPopupModal("ConfirmDeleteSystemSV", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "CẢNH BÁO!");
+        ImGui::Separator();
+        ImGui::Text("Bạn có chắc chắn muốn xóa sinh viên sau khỏi hệ thống?");
+        ImGui::Text("Họ và Tên: %s", confirm_xoa_ten);
+        ImGui::Text("MSSV: %s", confirm_xoa_mssv);
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Lưu ý: Hành động này sẽ XÓA LUÔN sinh viên khỏi mọi lớp học phần liên quan!");
+        ImGui::Separator();
+
+        if (ImGui::Button("Xác nhận Xóa", ImVec2(150, 0))) {
+            if (confirm_xoa_idx >= 0 && confirm_xoa_idx < nSV) {
+                char xoa_mssv[20];
+                strcpy(xoa_mssv, confirm_xoa_mssv);
+
+                // 1. Xóa khỏi danh sách sinh viên tổng
+                for (int k = confirm_xoa_idx; k < nSV - 1; k++) {
+                    dsSV[k] = dsSV[k + 1];
+                }
+                nSV--;
+                ghiFileSinhVien();
+
+                // 2. Quét tất cả các file học phần của tất cả các môn học để xóa
+                for (int f = 0; f < soMon; f++) {
+                    for (int c = 0; c < dsMonHoc[f].soHocPhan; c++) {
+                        char fileHP[50];
+                        strcpy(fileHP, dsMonHoc[f].dsHocPhan[c].fileHP);
+                        
+                        FILE *fpTemp = fopen(fileHP, "r");
+                        if (fpTemp) {
+                            float temp_wLab, temp_wPT, temp_wPre, temp_wFinal;
+                            int temp_colLocked[6];
+                            int temp_soSVToiDa;
+                            SinhVien temp_ds[MAX];
+                            int temp_n = 0;
+
+                            char line[256];
+                            if (fgets(line, sizeof(line), fpTemp)) {
+                                int tc = 0;
+                                int parsed = sscanf(line, "%f %f %f %f %d %d %d %d %d %d %d", 
+                                                &temp_wLab, &temp_wPT, &temp_wPre, &temp_wFinal, 
+                                                &temp_colLocked[0], &temp_colLocked[1], &temp_colLocked[2], &temp_colLocked[3], &temp_colLocked[4], &temp_colLocked[5],
+                                                &tc);
+                                temp_soSVToiDa = (parsed >= 11) ? tc : 0;
+                            }
+
+                            while (fgets(line, sizeof(line), fpTemp) && temp_n < MAX) {
+                                if (strlen(line) < 5) continue;
+                                int check = sscanf(line, "%19s %19s %[^0-9.-] %f %f %f %f %f %f", 
+                                                   temp_ds[temp_n].maSV, temp_ds[temp_n].lop, temp_ds[temp_n].tenSV, 
+                                                   &temp_ds[temp_n].lab1, &temp_ds[temp_n].lab2, &temp_ds[temp_n].pt1, &temp_ds[temp_n].pt2, 
+                                                   &temp_ds[temp_n].presentation, &temp_ds[temp_n].finalTest);
+
+                                if (check >= 2) { 
+                                    int len = strlen(temp_ds[temp_n].tenSV);
+                                    while(len > 0 && (temp_ds[temp_n].tenSV[len-1] == ' ' || temp_ds[temp_n].tenSV[len-1] == '\t' || 
+                                                      temp_ds[temp_n].tenSV[len-1] == '\r' || temp_ds[temp_n].tenSV[len-1] == '\n')) {
+                                        temp_ds[temp_n].tenSV[--len] = '\0';
+                                    }
+                                    temp_n++;
+                                }
+                            }
+                            fclose(fpTemp);
+
+                            // Xóa sinh viên nếu có trong lớp này
+                            int sectionIdx = -1;
+                            for (int x = 0; x < temp_n; x++) {
+                                if (strcmp(temp_ds[x].maSV, xoa_mssv) == 0) {
+                                    sectionIdx = x;
+                                    break;
+                                }
+                            }
+                            if (sectionIdx >= 0) {
+                                for (int x = sectionIdx; x < temp_n - 1; x++) {
+                                    temp_ds[x] = temp_ds[x + 1];
+                                }
+                                temp_n--;
+                                
+                                // Ghi đè lại file HP
+                                FILE *fpWrite = fopen(fileHP, "w");
+                                if (fpWrite) {
+                                    fprintf(fpWrite, "%f %f %f %f %d %d %d %d %d %d %d\n", 
+                                                 temp_wLab, temp_wPT, temp_wPre, temp_wFinal,
+                                                 temp_colLocked[0], temp_colLocked[1], temp_colLocked[2], temp_colLocked[3], temp_colLocked[4], temp_colLocked[5],
+                                                 temp_soSVToiDa);
+                                    for (int x = 0; x < temp_n; x++) {
+                                        fprintf(fpWrite, "%s %s %s %f %f %f %f %f %f\n", 
+                                                 temp_ds[x].maSV, temp_ds[x].lop, temp_ds[x].tenSV, 
+                                                 temp_ds[x].lab1, temp_ds[x].lab2, temp_ds[x].pt1, temp_ds[x].pt2, 
+                                                 temp_ds[x].presentation, temp_ds[x].finalTest);
+                                    }
+                                    fclose(fpWrite);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 3. Load lại dữ liệu nếu lớp đang chọn chứa sinh viên vừa xóa
+                if (hp_selected_idx != -1) {
+                    docFile(fileHPHienTai);
+                }
+            }
+            confirm_xoa_idx = -1;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Hủy", ImVec2(150, 0))) {
+            confirm_xoa_idx = -1;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
     ImGui::EndPopup();
 }
 
-        ImGui::Text("1. Chon Mon Hoc:");
+        ImGui::Text("1. Chọn Môn Học:");
         if (ImGui::BeginListBox("##MonHocList", ImVec2(-FLT_MIN, 150))) {
             for (int i = 0; i < soMon; i++) {
                 const bool is_selected = (mon_selected_idx == i);
@@ -465,12 +620,12 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
             }
             ImGui::EndListBox();
         }
-        if (ImGui::Button("Them Mon Hoc Moi", ImVec2(-FLT_MIN, 0))) {
+        if (ImGui::Button("Thêm Môn Học Mới", ImVec2(-FLT_MIN, 0))) {
             show_add_mon_modal = true;
         }
 
         if (mon_selected_idx != -1) {
-            ImGui::Text("2. Chon Hoc Phan:");
+            ImGui::Text("2. Chọn Học Phần:");
             MonHoc& currentMon = dsMonHoc[mon_selected_idx];
             if (ImGui::BeginListBox("##HocPhanList", ImVec2(-FLT_MIN, 150))) {
                 for (int i = 0; i < currentMon.soHocPhan; i++) {
@@ -486,8 +641,8 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
 
        if (hp_selected_idx != -1) {
     ImGui::Separator();
-    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f), "THEM SINH VIEN VAO HOC PHAN");
-    if (ImGui::Button("Chon sinh vien tu danh sach", ImVec2(-FLT_MIN, 0))) {
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f), "THÊM SINH VIÊN VÀO HỌC PHẦN");
+    if (ImGui::Button("Chọn sinh viên từ danh sách", ImVec2(-FLT_MIN, 0))) {
         ImGui::OpenPopup("ChonSVPopup");
     }
 
@@ -495,17 +650,39 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
     static char search_them[50] = "";
 
     if (ImGui::BeginPopupModal("ChonSVPopup", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "CHON SINH VIEN DE THEM VAO LOP");
-        ImGui::InputText("Tim kiem (MSSV hoac Ten)", search_them, IM_ARRAYSIZE(search_them));
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "CHỌN SINH VIÊN ĐỂ THÊM VÀO LỚP");
+        ImGui::InputText("Tìm kiếm (MSSV hoặc Tên)", search_them, IM_ARRAYSIZE(search_them));
         ImGui::Separator();
 
         if (ImGui::BeginTable("BangChonSV", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(700, 400))) {
             ImGui::TableSetupColumn("MSSV", ImGuiTableColumnFlags_WidthFixed, 150.0f);
-            ImGui::TableSetupColumn("Ho va Ten", ImGuiTableColumnFlags_WidthFixed, 350.0f);
-            ImGui::TableSetupColumn("Lop", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+            ImGui::TableSetupColumn("Họ và Tên", ImGuiTableColumnFlags_WidthFixed, 350.0f);
+            ImGui::TableSetupColumn("Lớp", ImGuiTableColumnFlags_WidthFixed, 150.0f);
             ImGui::TableHeadersRow();
 
             for (int i = 0; i < nSV; i++) {
+                // 1. Kiểm tra xem sinh viên đã có trong lớp học phần hiện tại chưa
+                bool already_in_class = false;
+                for (int j = 0; j < n; j++) {
+                    if (strcmp(ds[j].maSV, dsSV[i].maSV) == 0) {
+                        already_in_class = true;
+                        break;
+                    }
+                }
+                if (already_in_class) continue;
+
+                // 2. Kiểm tra xem sinh viên đã đăng ký học phần khác cùng môn chưa
+                bool already_in_other_class = false;
+                MonHoc& currentMon = dsMonHoc[mon_selected_idx];
+                for (int checkHP = 0; checkHP < currentMon.soHocPhan; checkHP++) {
+                    if (checkHP == hp_selected_idx) continue;
+                    if (svCoTrongFile(currentMon.dsHocPhan[checkHP].fileHP, dsSV[i].maSV)) {
+                        already_in_other_class = true;
+                        break;
+                    }
+                }
+                if (already_in_other_class) continue;
+
                 // Lọc theo từ khóa tìm kiếm
                 if (strlen(search_them) > 0) {
                     bool match = false;
@@ -539,7 +716,7 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
                     }
                     if (found) {
                         show_add_hp_error = true;
-                        strcpy(add_hp_error_msg, "Sinh vien da co trong lop hoc phan nay!");
+                        strcpy(add_hp_error_msg, "Sinh viên đã có trong lớp học phần này!");
                     } else {
                         bool registeredInOther = false;
                         MonHoc& currentMon = dsMonHoc[mon_selected_idx];
@@ -547,7 +724,7 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
                             if (checkHP == hp_selected_idx) continue;
                             if (svCoTrongFile(currentMon.dsHocPhan[checkHP].fileHP, add_hp_mssv)) {
                                 show_add_hp_error = true;
-                                sprintf(add_hp_error_msg, "Vi pham! Da hoc lop %s cua mon nay!", currentMon.dsHocPhan[checkHP].maHP);
+                                sprintf(add_hp_error_msg, "Vi phạm! Đã học lớp %s của môn này!", currentMon.dsHocPhan[checkHP].maHP);
                                 registeredInOther = true;
                                 break;
                             }
@@ -555,7 +732,7 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
                         if (!registeredInOther) {
                             if (n >= soSVToiDa) {
                                 show_add_hp_error = true;
-                                sprintf(add_hp_error_msg, "Lop hoc phan da day (%d/%d)!", n, soSVToiDa);
+                                sprintf(add_hp_error_msg, "Lớp học phần đã đầy (%d/%d)!", n, soSVToiDa);
                             } else {
                                 int idx = i;
                                 strcpy(ds[n].maSV, dsSV[idx].maSV);
@@ -568,8 +745,7 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
                                 strcpy(ds[n].diemChu, " ");
                                 n++;
                                 ghiFile(dsMonHoc[mon_selected_idx].dsHocPhan[hp_selected_idx].fileHP);
-                                search_them[0] = '\0';
-                                ImGui::CloseCurrentPopup();
+                                // Giữ popup mở và không xóa search_them để Sensei có thể chọn thêm liên tục
                             }
                         }
                     }
@@ -578,7 +754,7 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
             }
             ImGui::EndTable();
         }
-        if (ImGui::Button("Huy", ImVec2(120, 0))) {
+        if (ImGui::Button("Hủy", ImVec2(120, 0))) {
             search_them[0] = '\0';
             ImGui::CloseCurrentPopup();
         }
@@ -586,25 +762,25 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
     }
 }
 
-        if (show_add_hp_error) {///
+        if (show_add_hp_error) {
             ImGui::OpenPopup("LoiThemHP");
             show_add_hp_error = false;
         }
         if (ImGui::BeginPopupModal("LoiThemHP", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "LOI THEM VAO HOC PHAN:");
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "LỖI THÊM VÀO HỌC PHẦN:");
             ImGui::Text("%s", add_hp_error_msg);
-            if (ImGui::Button("Dong", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+            if (ImGui::Button("Đóng", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
             ImGui::EndPopup();
         }
 
         ImGui::Separator();
         
-        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "THEM SINH VIEN MOI (HE THONG)");
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "THÊM SINH VIÊN MỚI (HỆ THỐNG)");
         ImGui::InputText("MSSV", add_mssv, IM_ARRAYSIZE(add_mssv));
-        ImGui::InputText("Lop", add_lop, IM_ARRAYSIZE(add_lop));
-        ImGui::InputText("Ho Ten", add_ten, IM_ARRAYSIZE(add_ten));
+        ImGui::InputText("Lớp", add_lop, IM_ARRAYSIZE(add_lop));
+        ImGui::InputText("Họ Tên", add_ten, IM_ARRAYSIZE(add_ten));
         
-        if (ImGui::Button("Them vao danh sach tong", ImVec2(-FLT_MIN, 0))) {
+        if (ImGui::Button("Thêm vào danh sách tổng", ImVec2(-FLT_MIN, 0))) {
             if (strlen(add_mssv) > 0 && strlen(add_ten) > 0) {
                 if (timSVTheoMSSV(add_mssv) >= 0) {
                     ImGui::OpenPopup("LoiTrungMSSV");
@@ -619,137 +795,13 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
             }
         }
         
-        if (ImGui::Button("Xoa khoi danh sach tong (He thong)", ImVec2(-FLT_MIN, 0))) {
-            show_delete_system_modal = true;
-        }
 
         if (ImGui::BeginPopupModal("LoiTrungMSSV", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("Ma so sinh vien nay da ton tai trong he thong!");
-            if (ImGui::Button("Dong", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+            ImGui::Text("Mã số sinh viên này đã tồn tại trong hệ thống!");
+            if (ImGui::Button("Đóng", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
             ImGui::EndPopup();
         }
 
-        if (show_delete_system_modal) {
-            ImGui::OpenPopup("XoaSVHeThong");
-            show_delete_system_modal = false;
-        }
-        if (ImGui::BeginPopupModal("XoaSVHeThong", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("Nhap MSSV can xoa khoi he thong:");
-            ImGui::InputText("MSSV Xoa", delete_system_mssv, IM_ARRAYSIZE(delete_system_mssv));
-            
-            if (ImGui::Button("Xac nhan Xoa", ImVec2(120, 0))) {
-                if (strlen(delete_system_mssv) > 0) {
-                    int idx = timSVTheoMSSV(delete_system_mssv);
-                    if (idx < 0) {
-                        show_delete_system_error = true;
-                        strcpy(delete_system_error_msg, "MSSV khong ton tai!");
-                    } else {
-                        // Xóa khỏi danh sách sinh viên tổng
-                        for (int i = idx; i < nSV - 1; i++) {
-                            dsSV[i] = dsSV[i + 1];
-                        }
-                        nSV--;
-                        ghiFileSinhVien();
-
-                        // Quét tất cả các file học phần của tất cả các môn học
-                        for (int f = 0; f < soMon; f++) {
-                            for (int c = 0; c < dsMonHoc[f].soHocPhan; c++) {
-                                char fileHP[50];
-                                strcpy(fileHP, dsMonHoc[f].dsHocPhan[c].fileHP);
-                                
-                                FILE *fpTemp = fopen(fileHP, "r");
-                                if (fpTemp) {
-                                    float temp_wLab, temp_wPT, temp_wPre, temp_wFinal;
-                                    int temp_colLocked[6];
-                                    int temp_soSVToiDa;
-                                    SinhVien temp_ds[MAX];
-                                    int temp_n = 0;
-
-                                    char line[256];
-                                    if (fgets(line, sizeof(line), fpTemp)) {
-                                        int tc = 0;
-                                        int parsed = sscanf(line, "%f %f %f %f %d %d %d %d %d %d %d", 
-                                                        &temp_wLab, &temp_wPT, &temp_wPre, &temp_wFinal, 
-                                                        &temp_colLocked[0], &temp_colLocked[1], &temp_colLocked[2], &temp_colLocked[3], &temp_colLocked[4], &temp_colLocked[5],
-                                                        &tc);
-                                        temp_soSVToiDa = (parsed >= 11) ? tc : 0;
-                                    }
-
-                                    while (fgets(line, sizeof(line), fpTemp) && temp_n < MAX) {
-                                        if (strlen(line) < 5) continue;
-                                        int check = sscanf(line, "%19s %19s %[^0-9.-] %f %f %f %f %f %f", 
-                                                           temp_ds[temp_n].maSV, temp_ds[temp_n].lop, temp_ds[temp_n].tenSV, 
-                                                           &temp_ds[temp_n].lab1, &temp_ds[temp_n].lab2, &temp_ds[temp_n].pt1, &temp_ds[temp_n].pt2, 
-                                                           &temp_ds[temp_n].presentation, &temp_ds[temp_n].finalTest);
-
-                                        if (check >= 2) { 
-                                            int len = strlen(temp_ds[temp_n].tenSV);
-                                            while(len > 0 && (temp_ds[temp_n].tenSV[len-1] == ' ' || temp_ds[temp_n].tenSV[len-1] == '\t' || 
-                                                              temp_ds[temp_n].tenSV[len-1] == '\r' || temp_ds[temp_n].tenSV[len-1] == '\n')) {
-                                                temp_ds[temp_n].tenSV[--len] = '\0';
-                                            }
-                                            temp_n++;
-                                        }
-                                    }
-                                    fclose(fpTemp);
-
-                                    // Xóa sinh viên nếu có trong lớp này
-                                    int sectionIdx = -1;
-                                    for (int i = 0; i < temp_n; i++) {
-                                        if (strcmp(temp_ds[i].maSV, delete_system_mssv) == 0) {
-                                            sectionIdx = i;
-                                            break;
-                                        }
-                                    }
-                                    if (sectionIdx >= 0) {
-                                        for (int i = sectionIdx; i < temp_n - 1; i++) {
-                                            temp_ds[i] = temp_ds[i + 1];
-                                        }
-                                        temp_n--;
-                                        
-                                        // Ghi đè lại file HP
-                                        FILE *fpWrite = fopen(fileHP, "w");
-                                        if (fpWrite) {
-                                            fprintf(fpWrite, "%f %f %f %f %d %d %d %d %d %d %d\n", 
-                                                        temp_wLab, temp_wPT, temp_wPre, temp_wFinal,
-                                                        temp_colLocked[0], temp_colLocked[1], temp_colLocked[2], temp_colLocked[3], temp_colLocked[4], temp_colLocked[5],
-                                                        temp_soSVToiDa);
-                                            for (int i = 0; i < temp_n; i++) {
-                                                fprintf(fpWrite, "%s %s %s %f %f %f %f %f %f\n", 
-                                                        temp_ds[i].maSV, temp_ds[i].lop, temp_ds[i].tenSV, 
-                                                        temp_ds[i].lab1, temp_ds[i].lab2, temp_ds[i].pt1, temp_ds[i].pt2, 
-                                                        temp_ds[i].presentation, temp_ds[i].finalTest);
-                                            }
-                                            fclose(fpWrite);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Load lại dữ liệu nếu lớp đang được chọn chứa sinh viên vừa xóa
-                        if (hp_selected_idx != -1) {
-                            docFile(fileHPHienTai);
-                        }
-
-                        delete_system_mssv[0] = '\0';
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Huy", ImVec2(120, 0))) {
-                delete_system_mssv[0] = '\0';
-                ImGui::CloseCurrentPopup();
-            }
-
-            if (show_delete_system_error) {
-                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%s", delete_system_error_msg);
-                show_delete_system_error = false;
-            }
-
-            ImGui::EndPopup();
-        }
 
         ImGui::End();
 
@@ -758,19 +810,19 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
         // --------------------------------------------------------------------
         ImGui::SetNextWindowPos(ImVec2(370, 10), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(display_w - 380, display_h - 20), ImGuiCond_Always);
-        ImGui::Begin("Bang Diem Chi Tiet", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+        ImGui::Begin("Bảng Điểm Chi Tiết", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 
         if (hp_selected_idx == -1) {
-            ImGui::Text("Vui long chon Mon hoc va Hoc phan ben trai de xem thong tin bang diem.");
+            ImGui::Text("Vui lòng chọn Môn học và Học phần bên trái để xem thông tin bảng điểm.");
         } else {
-            ImGui::Text("Hoc phan hien tai: %s | File: %s", fileHPHienTai, fileHPHienTai);
-            ImGui::Text("Trong so: Lab=%.2f, PT=%.2f, Pre=%.2f, Final=%.2f | Si so: %d/%d", 
+            ImGui::Text("Học phần hiện tại: %s | File: %s", fileHPHienTai, fileHPHienTai);
+            ImGui::Text("Trọng số: Lab=%.2f, PT=%.2f, Pre=%.2f, Final=%.2f | Sĩ số: %d/%d", 
                          wLab, wPT, wPre, wFinal, n, soSVToiDa);
             ImGui::Separator();
 
-            ImGui::InputText("Tim kiem MSSV", search_mssv, IM_ARRAYSIZE(search_mssv));
+            ImGui::InputText("Tìm kiếm MSSV", search_mssv, IM_ARRAYSIZE(search_mssv));
             ImGui::SameLine();
-            if (ImGui::Button("Xem chi tiet") && strlen(search_mssv) > 0) {
+            if (ImGui::Button("Xem chi tiết") && strlen(search_mssv) > 0) {
                 for(int i=0; i<n; i++) {
                     if(strcmp(ds[i].maSV, search_mssv) == 0) {
                         detail_sv_idx = i;
@@ -782,19 +834,19 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
             
             ImGui::Spacing();
 
-            ImGui::Text("Sap xep:");
+            ImGui::Text("Sắp xếp:");
             ImGui::SameLine();
             ImGui::PushItemWidth(150);
-            const char* criteria_names[] = { "MSSV", "Ten sinh vien", "Lop", "Diem trung binh" };
+            const char* criteria_names[] = { "MSSV", "Tên sinh viên", "Lớp", "Điểm trung bình" };
             ImGui::Combo("##SortCriteria", &sort_criteria, criteria_names, IM_ARRAYSIZE(criteria_names));
             ImGui::PopItemWidth();
             ImGui::SameLine();
             ImGui::PushItemWidth(120);
-            const char* direction_names[] = { "Tang dan", "Giam dan" };
+            const char* direction_names[] = { "Tăng dần", "Giảm dần" };
             ImGui::Combo("##SortDirection", &sort_direction, direction_names, IM_ARRAYSIZE(direction_names));
             ImGui::PopItemWidth();
             ImGui::SameLine();
-            if (ImGui::Button("Sap xep")) {
+            if (ImGui::Button("Sắp xếp")) {
                 for (int i = 0; i < n - 1; i++) {
                     for (int j = i + 1; j < n; j++) {
                         bool canDoiCho = false;
@@ -828,7 +880,7 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
                 }
             }
             ImGui::SameLine();
-            if (ImGui::Button("Luu thu tu sap xep")) {
+            if (ImGui::Button("Lưu thứ tự sắp xếp")) {
                 ghiFile(fileHPHienTai);
             }
 
@@ -840,17 +892,17 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
             if (ImGui::BeginTable("StudentTable", 13, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY, ImVec2(0, table_height))) {
 ImGui::TableSetupColumn("STT", ImGuiTableColumnFlags_WidthFixed, 30.0f);
 ImGui::TableSetupColumn("MSSV", ImGuiTableColumnFlags_WidthFixed, 150.0f);
-ImGui::TableSetupColumn("Ho va Ten", ImGuiTableColumnFlags_WidthFixed, 200.0f);
-ImGui::TableSetupColumn("Lop", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+ImGui::TableSetupColumn("Họ và Tên", ImGuiTableColumnFlags_WidthFixed, 200.0f);
+ImGui::TableSetupColumn("Lớp", ImGuiTableColumnFlags_WidthFixed, 100.0f);
 ImGui::TableSetupColumn("Lab 1", ImGuiTableColumnFlags_WidthFixed, 70.0f);
 ImGui::TableSetupColumn("Lab 2", ImGuiTableColumnFlags_WidthFixed, 70.0f);
 ImGui::TableSetupColumn("PT 1", ImGuiTableColumnFlags_WidthFixed, 70.0f);
 ImGui::TableSetupColumn("PT 2", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-ImGui::TableSetupColumn("Pre", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-ImGui::TableSetupColumn("Final", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-ImGui::TableSetupColumn("DTB", ImGuiTableColumnFlags_WidthFixed, 70.0f);
-ImGui::TableSetupColumn("Chu", ImGuiTableColumnFlags_WidthFixed, 50.0f);
-ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+ImGui::TableSetupColumn("Thuyết trình", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+ImGui::TableSetupColumn("Cuối kỳ", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+ImGui::TableSetupColumn("ĐTB", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+ImGui::TableSetupColumn("Chữ", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+ImGui::TableSetupColumn("Thao tác", ImGuiTableColumnFlags_WidthFixed, 100.0f);
                 ImGui::TableHeadersRow();
 
                 for (int i = 0; i < n; i++) {
@@ -984,11 +1036,11 @@ ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
 
                     ImGui::TableSetColumnIndex(12);
                     char btn_id[32];
-                    sprintf(btn_id, "Loai##%d", i);
+                    sprintf(btn_id, "Loại##%d", i);
                     if (ImGui::Button(btn_id)) {
                         if (ds[i].finalTest >= 0) {
                             show_kick_error = true;
-                            sprintf(kick_error_msg, "Khong the loai! %s da hoan thanh diem cuoi ky.", ds[i].tenSV);
+                            sprintf(kick_error_msg, "Không thể loại! %s đã hoàn thành điểm cuối kỳ.", ds[i].tenSV);
                         } else {
                             for (int k = i; k < n - 1; k++) {
                                 ds[k] = ds[k + 1];
@@ -1003,16 +1055,16 @@ ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
 
             ImGui::Spacing();
 
-            ImGui::Text("Chot tung cot diem (Yeu cau phai co du diem):");
+            ImGui::Text("Chốt từng cột điểm (Yêu cầu phải có đủ điểm):");
             for (int ci = 0; ci < 6; ci++) {
                 char btn_lbl[32];
                 if (colLocked[ci]) {
-                    sprintf(btn_lbl, "%s [KHOA]", tenCotGlobal[ci]);
+                    sprintf(btn_lbl, "%s [KHÓA]", tenCotGlobal[ci]);
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.2f, 0.2f, 1.0f));
                     ImGui::Button(btn_lbl);
                     ImGui::PopStyleColor();
                 } else {
-                    sprintf(btn_lbl, "%s [MO]", tenCotGlobal[ci]);
+                    sprintf(btn_lbl, "%s [MỞ]", tenCotGlobal[ci]);
                     if (ImGui::Button(btn_lbl)) {
                         if (cotCoDuDiem(ci)) {
                             colLocked[ci] = 1;
@@ -1026,19 +1078,19 @@ ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
             }
 
             if (ImGui::BeginPopupModal("LoiChotCot", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "LOI CHOT COT DIEM:");
-                ImGui::Text("Cot nay con sinh vien chua co diem! Khong the chot.");
-                if (ImGui::Button("Dong", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+                ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "LỖI CHỐT CỘT ĐIỂM:");
+                ImGui::Text("Cột này còn sinh viên chưa có điểm! Không thể chốt.");
+                if (ImGui::Button("Đóng", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
                 ImGui::EndPopup();
             }
 
             ImGui::Spacing();
             
-            if (ImGui::Button("Luu Thay Doi Diem", ImVec2(200, 40))) {
+            if (ImGui::Button("Lưu Thay Đổi Điểm", ImVec2(200, 40))) {
                 ghiFile(fileHPHienTai);
             }
             ImGui::SameLine();
-            if (ImGui::Button("Chot Toan Bo Cot", ImVec2(200, 40))) {
+            if (ImGui::Button("Chốt Toàn Bộ Cột", ImVec2(200, 40))) {
                 for(int ci=0; ci<6; ci++) {
                     if (cotCoDuDiem(ci)) colLocked[ci] = 1;
                 }
@@ -1051,29 +1103,29 @@ ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
         // CỬA SỔ PHỤ: POPUP PHIẾU ĐIỂM
         // --------------------------------------------------------------------
         if (show_student_detail && detail_sv_idx != -1) {
-            ImGui::Begin("Bang Diem Chi Tiet Sinh Vien", &show_student_detail, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::Begin("Bảng Điểm Chi Tiết Sinh Viên", &show_student_detail, ImGuiWindowFlags_AlwaysAutoResize);
             SinhVien& sv = ds[detail_sv_idx];
             ImGui::Text("MSSV: %s", sv.maSV);
-            ImGui::Text("Lop: %s", sv.lop);
-            ImGui::Text("Ho ten: %s", sv.tenSV);
+            ImGui::Text("Lớp: %s", sv.lop);
+            ImGui::Text("Họ tên: %s", sv.tenSV);
             ImGui::Separator();
             char sLab1[16], sLab2[16], sPT1[16], sPT2[16], sPre[16], sFinal[16], sDTB[16];
-            if (sv.lab1 < 0) strcpy(sLab1, "Chua co"); else sprintf(sLab1, "%.1f", sv.lab1);
-            if (sv.lab2 < 0) strcpy(sLab2, "Chua co"); else sprintf(sLab2, "%.1f", sv.lab2);
-            if (sv.pt1 < 0) strcpy(sPT1, "Chua co"); else sprintf(sPT1, "%.1f", sv.pt1);
-            if (sv.pt2 < 0) strcpy(sPT2, "Chua co"); else sprintf(sPT2, "%.1f", sv.pt2);
-            if (sv.presentation < 0) strcpy(sPre, "Chua co"); else sprintf(sPre, "%.1f", sv.presentation);
-            if (sv.finalTest < 0) strcpy(sFinal, "Chua co"); else sprintf(sFinal, "%.1f", sv.finalTest);
-            if (!daCoDiem(sv)) strcpy(sDTB, "Chua co"); else sprintf(sDTB, "%.2f", sv.dtb);
+            if (sv.lab1 < 0) strcpy(sLab1, "Chưa có"); else sprintf(sLab1, "%.1f", sv.lab1);
+            if (sv.lab2 < 0) strcpy(sLab2, "Chưa có"); else sprintf(sLab2, "%.1f", sv.lab2);
+            if (sv.pt1 < 0) strcpy(sPT1, "Chưa có"); else sprintf(sPT1, "%.1f", sv.pt1);
+            if (sv.pt2 < 0) strcpy(sPT2, "Chưa có"); else sprintf(sPT2, "%.1f", sv.pt2);
+            if (sv.presentation < 0) strcpy(sPre, "Chưa có"); else sprintf(sPre, "%.1f", sv.presentation);
+            if (sv.finalTest < 0) strcpy(sFinal, "Chưa có"); else sprintf(sFinal, "%.1f", sv.finalTest);
+            if (!daCoDiem(sv)) strcpy(sDTB, "Chưa có"); else sprintf(sDTB, "%.2f", sv.dtb);
 
-            ImGui::Text("Diem Lab 1: %s | Lab 2: %s", sLab1, sLab2);
-            ImGui::Text("Diem PT 1:  %s | PT 2:  %s", sPT1, sPT2);
-            ImGui::Text("Thuyet trinh: %s", sPre);
-            ImGui::Text("Thi cuoi ky:  %s", sFinal);
+            ImGui::Text("Điểm Lab 1: %s | Lab 2: %s", sLab1, sLab2);
+            ImGui::Text("Điểm PT 1:  %s | PT 2:  %s", sPT1, sPT2);
+            ImGui::Text("Thuyết trình: %s", sPre);
+            ImGui::Text("Thi cuối kỳ:  %s", sFinal);
             ImGui::Separator();
-            ImGui::TextColored(ImVec4(1,0,0,1), "DIEM TRUNG BINH: %s", sDTB);
-            ImGui::Text("XEP LOAI: %s", sv.diemChu);
-            if (ImGui::Button("Dong")) { show_student_detail = false; }
+            ImGui::TextColored(ImVec4(1,0,0,1), "ĐIỂM TRUNG BÌNH: %s", sDTB);
+            ImGui::Text("XẾP LOẠI: %s", sv.diemChu);
+            if (ImGui::Button("Đóng")) { show_student_detail = false; }
             ImGui::End();
         }
 
@@ -1082,9 +1134,9 @@ ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
             show_kick_error = false;
         }
         if (ImGui::BeginPopupModal("LoiKickSV", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "LOI LOAI SINH VIEN KHOI HOC PHAN:");
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "LỖI LOẠI SINH VIÊN KHỎI HỌC PHẦN:");
             ImGui::Text("%s", kick_error_msg);
-            if (ImGui::Button("Dong", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+            if (ImGui::Button("Đóng", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
             ImGui::EndPopup();
         }
 
@@ -1093,41 +1145,41 @@ ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
             show_add_mon_modal = false;
         }
         if (ImGui::BeginPopupModal("ThemMonHocModal", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "THEM MON HOC MOI");
-            ImGui::InputText("Ten mon hoc", add_mon_ten, IM_ARRAYSIZE(add_mon_ten));
-            ImGui::InputInt("So luong SV toi da", &add_mon_max_sv);
-            ImGui::InputInt("So luong hoc phan (1-20)", &add_mon_so_hp);
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "THÊM MÔN HỌC MỚI");
+            ImGui::InputText("Tên môn học", add_mon_ten, IM_ARRAYSIZE(add_mon_ten));
+            ImGui::InputInt("Số lượng SV tối đa", &add_mon_max_sv);
+            ImGui::InputInt("Số lượng học phần (1-20)", &add_mon_so_hp);
             if (add_mon_so_hp < 1) add_mon_so_hp = 1;
             if (add_mon_so_hp > MAX_HP) add_mon_so_hp = MAX_HP;
 
             ImGui::Separator();
-            ImGui::Text("Trong so diem (Lab x 2 + PT x 2 + Pre + Final = 1.0):");
-            ImGui::InputFloat("Heso Lab", &add_mon_w_lab, 0.01f, 0.05f, "%.2f");
-            ImGui::InputFloat("Heso PT", &add_mon_w_pt, 0.01f, 0.05f, "%.2f");
-            ImGui::InputFloat("Heso Pre", &add_mon_w_pre, 0.01f, 0.05f, "%.2f");
-            ImGui::InputFloat("Heso Final", &add_mon_w_final, 0.01f, 0.05f, "%.2f");
+            ImGui::Text("Trọng số điểm (Lab x 2 + PT x 2 + Pre + Final = 1.0):");
+            ImGui::InputFloat("Hệ số Lab", &add_mon_w_lab, 0.01f, 0.05f, "%.2f");
+            ImGui::InputFloat("Hệ số PT", &add_mon_w_pt, 0.01f, 0.05f, "%.2f");
+            ImGui::InputFloat("Hệ số Pre", &add_mon_w_pre, 0.01f, 0.05f, "%.2f");
+            ImGui::InputFloat("Hệ số Final", &add_mon_w_final, 0.01f, 0.05f, "%.2f");
 
             float tong_ts = add_mon_w_lab * 2 + add_mon_w_pt * 2 + add_mon_w_pre + add_mon_w_final;
-            ImGui::Text("Tong trong so hien tai: %.2f", tong_ts);
+            ImGui::Text("Tổng trọng số hiện tại: %.2f", tong_ts);
 
             ImGui::Separator();
-            ImGui::Text("Nhap ma cho tung hoc phan:");
+            ImGui::Text("Nhập mã cho từng học phần:");
             for (int i = 0; i < add_mon_so_hp; i++) {
                 char label[32];
-                sprintf(label, "Ma hoc phan %d", i + 1);
+                sprintf(label, "Mã học phần %d", i + 1);
                 ImGui::InputText(label, add_mon_ma_hp[i], sizeof(add_mon_ma_hp[i]));
             }
 
-            if (ImGui::Button("Xac nhan", ImVec2(120, 0))) {
+            if (ImGui::Button("Xác nhận", ImVec2(120, 0))) {
                 if (strlen(add_mon_ten) == 0) {
                     show_add_mon_error = true;
-                    strcpy(add_mon_error_msg, "Ten mon hoc khong duoc de trong!");
+                    strcpy(add_mon_error_msg, "Tên môn học không được để trống!");
                 } else if (add_mon_max_sv < 1 || add_mon_max_sv > MAX) {
                     show_add_mon_error = true;
-                    sprintf(add_mon_error_msg, "Si so toi da phai tu 1 den %d!", MAX);
+                    sprintf(add_mon_error_msg, "Sĩ số tối đa phải từ 1 đến %d!", MAX);
                 } else if (tong_ts < 0.99f || tong_ts > 1.01f) {
                     show_add_mon_error = true;
-                    strcpy(add_mon_error_msg, "Tong trong so phai bang 1.0!");
+                    strcpy(add_mon_error_msg, "Tổng trọng số phải bằng 1.0!");
                 } else {
                     bool dup_mon = false;
                     docFilemonhoc();
@@ -1139,20 +1191,20 @@ ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
                     }
                     if (dup_mon) {
                         show_add_mon_error = true;
-                        strcpy(add_mon_error_msg, "Mon hoc nay da ton tai!");
+                        strcpy(add_mon_error_msg, "Môn học này đã tồn tại!");
                     } else {
                         bool dup_ma = false;
                         for (int i = 0; i < add_mon_so_hp; i++) {
                             if (strlen(add_mon_ma_hp[i]) == 0) {
                                 show_add_mon_error = true;
-                                strcpy(add_mon_error_msg, "Ma hoc phan khong duoc de trong!");
+                                strcpy(add_mon_error_msg, "Mã học phần không được để trống!");
                                 dup_ma = true;
                                 break;
                             }
                             for (int j = 0; j < i; j++) {
                                 if (strcmp(add_mon_ma_hp[i], add_mon_ma_hp[j]) == 0) {
                                     show_add_mon_error = true;
-                                    strcpy(add_mon_error_msg, "Cac ma hoc phan khong duoc trung nhau!");
+                                    strcpy(add_mon_error_msg, "Các mã học phần không được trùng nhau!");
                                     dup_ma = true;
                                     break;
                                 }
@@ -1219,7 +1271,7 @@ ImGui::TableSetupColumn("Thao tac", ImGuiTableColumnFlags_WidthFixed, 100.0f);
                 }
             }
             ImGui::SameLine();
-            if (ImGui::Button("Huy", ImVec2(120, 0))) {
+            if (ImGui::Button("Hủy", ImVec2(120, 0))) {
                 add_mon_ten[0] = '\0';
                 for (int i = 0; i < MAX_HP; i++) add_mon_ma_hp[i][0] = '\0';
                 ImGui::CloseCurrentPopup();

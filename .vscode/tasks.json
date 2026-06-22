@@ -7,6 +7,8 @@
             "args": [
                 "-std=c++11",
                 "-g",
+                "-finput-charset=utf-8",
+                "-fexec-charset=utf-8",
                 "PBL1_UI.cpp",
                 "icon.o",
                 "imgui-master/imgui-master/imgui.cpp",

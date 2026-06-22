@@ -9,3 +9,4 @@ GDTC2	1	NH25	Res/gdtc2.dat
 Anh	1	NH25	Res/anh.dat
 Dia	3	NH01	Res/dia_nh01.dat	NH02	Res/dia_nh02.dat	NH06	Res/dia_nh06.dat
 Tin	1	NH99	Res/tin_nh99.dat
+LT huong doi tuong	2	OOP1	Res/lthuongdoituong_oop1.dat	OOP2	Res/lthuongdoituong_oop2.dat
