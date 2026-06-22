@@ -7,8 +7,10 @@
         "**/Thumbs.db": true,
         "**/*.meta": true,
         "**/*.fbx": true,
-        "Cache/": true,
-        "Libraries/": true
+        "Libraries/": true,
+        "Cache": false,
+        "Cache/": false,
+        "Cache/**": false
     },
     "workbench.colorTheme": "Dark 2026",
     "editor.semanticTokenColorCustomizations": {

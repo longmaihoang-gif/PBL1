@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Program Files (x86)/Dev-Cpp/MinGW64/include",
+                "C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include",
+                "C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.8.1/include",
+                "${workspaceFolder}/imgui-master/imgui-master",
+                "${workspaceFolder}/glfw-3.4.bin.WIN64/include",
+                "C:/Users/maiho/OneDrive/Tài liệu/PBL1/imgui-master/imgui-master",
+                "C:/Users/maiho/OneDrive/Tài liệu/PBL1/glfw-3.4.bin.WIN64/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/Program Files (x86)/Dev-Cpp/MinGW64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
