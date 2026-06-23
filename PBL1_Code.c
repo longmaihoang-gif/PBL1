@@ -287,6 +287,7 @@ int tatCaDaChot() {
     return 1;
 }
 int cotCoDuDiem(int colIndex) {
+    if (n == 0) return 0;
     int si;
     for (si = 0; si < n; si++) {
         float val;
@@ -300,6 +301,12 @@ int cotCoDuDiem(int colIndex) {
     }
     return 1;
 }
+float clampDiem(float val) {
+    if (val < 0.0f) return 0.0f;
+    if (val > 10.0f) return 10.0f;
+    return val;
+}
+
 void nhapTheoCot(float *diemCot, int indexSV, char tenCot[], int needFlush) {
     char buf[50];
     int ch;
@@ -328,9 +335,10 @@ void nhapTheoCot(float *diemCot, int indexSV, char tenCot[], int needFlush) {
     }
     
     float val = atof(buf);
-    if (val < 0 || val > 10) {
-        printf("         [!] Diem khong hop le (0-10). Bo qua.\n");
-        return;
+    if (val < 0.0f || val > 10.0f) {
+        float originalVal = val;
+        val = clampDiem(val);
+        printf("         [!] Diem nhap ngoai khoang 0-10 (%.1f). Da tu dong lay gia tri gan nhat: %.1f\n", originalVal, val);
     }
     *diemCot = val;
     printf("         => Da cap nhat: %.1f\n", val);
@@ -595,12 +603,16 @@ void sua() {
                     if (!colLocked[0] && !colLocked[1]) {
                         printf("Nhap lai diem lab1, lab2: ");
                         scanf("%f %f", &ds[i].lab1, &ds[i].lab2);
+                        ds[i].lab1 = clampDiem(ds[i].lab1);
+                        ds[i].lab2 = clampDiem(ds[i].lab2);
                     } else if (!colLocked[0]) {
                         printf("Nhap lai diem lab1: ");
                         scanf("%f", &ds[i].lab1);
+                        ds[i].lab1 = clampDiem(ds[i].lab1);
                     } else {
                         printf("Nhap lai diem lab2: ");
                         scanf("%f", &ds[i].lab2);
+                        ds[i].lab2 = clampDiem(ds[i].lab2);
                     }
                 }
                 else if(lc == 2){
@@ -610,23 +622,29 @@ void sua() {
                     if (!colLocked[2] && !colLocked[3]) {
                         printf("Nhap lai diem pt1, pt2: ");
                         scanf("%f %f", &ds[i].pt1, &ds[i].pt2);
+                        ds[i].pt1 = clampDiem(ds[i].pt1);
+                        ds[i].pt2 = clampDiem(ds[i].pt2);
                     } else if (!colLocked[2]) {
                         printf("Nhap lai diem pt1: ");
                         scanf("%f", &ds[i].pt1);
+                        ds[i].pt1 = clampDiem(ds[i].pt1);
                     } else {
                         printf("Nhap lai diem pt2: ");
                         scanf("%f", &ds[i].pt2);
+                        ds[i].pt2 = clampDiem(ds[i].pt2);
                     }
                 }
                 else if(lc == 3){
                     if (colLocked[4]) { printf("  [!] Presentation da CHOT!\n"); continue; }
                     printf("Nhap lai diem presentation: ");
                     scanf("%f", &ds[i].presentation);
+                    ds[i].presentation = clampDiem(ds[i].presentation);
                 }
                 else if(lc == 4){
                     if (colLocked[5]) { printf("  [!] Final Test da CHOT!\n"); continue; }
                     printf("Nhap lai diem final test: ");
                     scanf("%f", &ds[i].finalTest);
+                    ds[i].finalTest = clampDiem(ds[i].finalTest);
                 }
                 else if(lc == 5){
                     if (tatCaDaChot()) { printf("  [!] Tat ca cot da CHOT!\n"); continue; }
@@ -638,12 +656,12 @@ void sua() {
                     if (!colLocked[4]) printf("Pre=%.1f ", ds[i].presentation);
                     if (!colLocked[5]) printf("Final=%.1f", ds[i].finalTest);
                     printf("\nNhap lai cac cot CHUA CHOT: ");
-                    if (!colLocked[0]) scanf("%f", &ds[i].lab1);
-                    if (!colLocked[1]) scanf("%f", &ds[i].lab2);
-                    if (!colLocked[2]) scanf("%f", &ds[i].pt1);
-                    if (!colLocked[3]) scanf("%f", &ds[i].pt2);
-                    if (!colLocked[4]) scanf("%f", &ds[i].presentation);
-                    if (!colLocked[5]) scanf("%f", &ds[i].finalTest);
+                    if (!colLocked[0]) { scanf("%f", &ds[i].lab1); ds[i].lab1 = clampDiem(ds[i].lab1); }
+                    if (!colLocked[1]) { scanf("%f", &ds[i].lab2); ds[i].lab2 = clampDiem(ds[i].lab2); }
+                    if (!colLocked[2]) { scanf("%f", &ds[i].pt1); ds[i].pt1 = clampDiem(ds[i].pt1); }
+                    if (!colLocked[3]) { scanf("%f", &ds[i].pt2); ds[i].pt2 = clampDiem(ds[i].pt2); }
+                    if (!colLocked[4]) { scanf("%f", &ds[i].presentation); ds[i].presentation = clampDiem(ds[i].presentation); }
+                    if (!colLocked[5]) { scanf("%f", &ds[i].finalTest); ds[i].finalTest = clampDiem(ds[i].finalTest); }
                 }
                 else {
                     break;
@@ -825,6 +843,21 @@ void themSVVaoMonHoc() {
         strcpy(tenFile, dsMonHoc[monIdx].dsHocPhan[hpIdx].fileHP);
 
         docFile(tenFile);
+
+        bool coCotDaChot = false;
+        int ci;
+        for (ci = 0; ci < 6; ci++) {
+            if (colLocked[ci] == 1) {
+                coCotDaChot = true;
+                break;
+            }
+        }
+        if (coCotDaChot) {
+            printf("\n[!] Khong the them! Hoc phan nay da co it nhat mot cot diem duoc CHOT.\n");
+            printf("\nAn c de tiep tuc, an bat ky de thoat");
+            signal = getch();
+            continue;
+        }
 
         printf("\n--- THEM SINH VIEN VAO HOC PHAN %s - MON %s ---\n", 
                dsMonHoc[monIdx].dsHocPhan[hpIdx].maHP, dsMonHoc[monIdx].tenMon);
@@ -1183,8 +1216,9 @@ void quanLySinhVien(char tenFile[]) {
 	            if (colLocked[idx]) {
 	                printf("\n[!] Cot %s da chot roi!\n", tenCotGlobal[idx]);
 	            } else if (!cotCoDuDiem(idx)) {
-	                printf("\n[!] Cot %s con sinh vien CHUA CO DIEM. Khong the chot!\n", tenCotGlobal[idx]);
+	                printf("\n[!] Cot %s con sinh vien CHUA CO DIEM hoac lop chua co sinh vien. Khong the chot!\n", tenCotGlobal[idx]);
 	            } else {
+	                printf("\n[CANH BAO] Thao tac chot cot diem khong the hoan lai (khong the sua diem sau khi chot)!");
 	                printf("\nXac nhan CHOT cot %s? (y/n): ", tenCotGlobal[idx]);
 	                if (getch() == 'y') {
 	                    colLocked[idx] = 1;
@@ -1195,36 +1229,34 @@ void quanLySinhVien(char tenFile[]) {
 	                }
 	            }
 	        } else if (lcChot == 7) {
-	            int coTheChot = 0, khongDu = 0;
-	            for (ci = 0; ci < 6; ci++) {
-	                if (!colLocked[ci]) {
-	                    if (cotCoDuDiem(ci)) coTheChot++;
-	                    else khongDu++;
-	                }
-	            }
-	            if (coTheChot == 0) {
-	                printf("\n[!] Khong co cot nao du dieu kien de chot!\n");
-	                if (khongDu > 0) printf("    (%d cot con thieu diem)\n", khongDu);
-	            } else {
-	                printf("\nSe chot %d cot du dieu kien", coTheChot);
-	                if (khongDu > 0) printf(" (%d cot thieu diem se bo qua)", khongDu);
-	                printf(". Xac nhan? (y/n): ");
-	                if (getch() == 'y') {
-	                    for (ci = 0; ci < 6; ci++) {
-	                        if (!colLocked[ci] && cotCoDuDiem(ci)) {
-	                            colLocked[ci] = 1;
-	                            printf("  => Da chot cot %s\n", tenCotGlobal[ci]);
-	                        } else if (!colLocked[ci]) {
-	                            printf("  => Bo qua cot %s (thieu diem)\n", tenCotGlobal[ci]);
-	                        }
-	                    }
-	                    ghiFile(tenFile);
-	                    printf("\nChot thanh cong!\n");
-	                } else {
-	                    printf("\nDa huy.\n");
-	                }
-	            }
-	        }
+            int coTheChot = 0, khongDu = 0;
+            for (ci = 0; ci < 6; ci++) {
+                if (!colLocked[ci]) {
+                    if (cotCoDuDiem(ci)) coTheChot++;
+                    else khongDu++;
+                }
+            }
+            if (khongDu > 0) {
+                printf("\n[!] Khong the chot tat ca! Con %d cot chua chot nhung chua co du diem (hoac lop chua co sinh vien).\n", khongDu);
+            } else if (coTheChot == 0) {
+                printf("\n[!] Tat ca cac cot deu da chot tu truoc!\n");
+            } else {
+                printf("\n[CANH BAO] Thao tac chot cot diem khong the hoan lai (khong the sua diem sau khi chot)!");
+                printf("\nXac nhan chot toan bo %d cot con lai? (y/n): ", coTheChot);
+                if (getch() == 'y') {
+                    for (ci = 0; ci < 6; ci++) {
+                        if (!colLocked[ci]) {
+                            colLocked[ci] = 1;
+                            printf("  => Da chot cot %s\n", tenCotGlobal[ci]);
+                        }
+                    }
+                    ghiFile(tenFile);
+                    printf("\nChot thanh cong!\n");
+                } else {
+                    printf("\nDa huy.\n");
+                }
+            }
+        }
     }
 
 void themMonHoc() {
