@@ -850,15 +850,17 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
 
             ImGui::InputText("Tìm kiếm MSSV", search_mssv, IM_ARRAYSIZE(search_mssv));
             ImGui::SameLine();
-            if (ImGui::Button("Xem chi tiết") && strlen(search_mssv) > 0) {
-                for(int i=0; i<n; i++) {
-                    if(strcmp(ds[i].maSV, search_mssv) == 0) {
-                        detail_sv_idx = i;
-                        show_student_detail = true;
-                        break;
-                    }
-                }
-            }
+          if (ImGui::Button("Xem chi tiết") && strlen(search_mssv) > 0) {
+    detail_sv_idx = -1;
+    show_student_detail = false;
+    for(int i=0; i<n; i++) {
+        if(strcmp(ds[i].maSV, search_mssv) == 0) {
+            detail_sv_idx = i;
+            show_student_detail = true;
+            break;
+        }
+    }
+}
             
             ImGui::Spacing();
 
@@ -1091,10 +1093,17 @@ ImGui::TableSetupColumn("Thao tác", ImGuiTableColumnFlags_WidthFixed, 100.0f);
                     }
 
                     // DTB
-                    ImGui::TableSetColumnIndex(10); 
-                    if (!daCoDiem(ds[i])) ImGui::Text(" ");
-                    else ImGui::TextColored(ImVec4(0,1,0,1), "%.2f", ds[i].dtb);
-
+                    // DTB
+ImGui::TableSetColumnIndex(10); 
+if (!daCoDiem(ds[i])) ImGui::Text(" ");
+else {
+    ImVec4 mauDTB;
+    if (ds[i].dtb >= 8.0f)       mauDTB = ImVec4(0.0f, 1.0f, 0.3f, 1.0f); 
+    else if (ds[i].dtb >= 6.5f)  mauDTB = ImVec4(0.3f, 0.6f, 1.0f, 1.0f); 
+    else if (ds[i].dtb >= 5.0f)  mauDTB = ImVec4(1.0f, 0.85f, 0.0f, 1.0f); 
+    else                          mauDTB = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); 
+    ImGui::TextColored(mauDTB, "%.2f", ds[i].dtb);
+}
                     // Chu
                     ImGui::TableSetColumnIndex(11); ImGui::Text("%s", ds[i].diemChu);
 
