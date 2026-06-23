@@ -745,7 +745,7 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
                                 strcpy(ds[n].diemChu, " ");
                                 n++;
                                 ghiFile(dsMonHoc[mon_selected_idx].dsHocPhan[hp_selected_idx].fileHP);
-                                // Giữ popup mở và không xóa search_them để Sensei có thể chọn thêm liên tục
+                                // Giữ popup mở và không xóa search_them để chọn thêm liên tục
                             }
                         }
                     }
