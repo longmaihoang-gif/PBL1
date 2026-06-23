@@ -67,6 +67,86 @@ int nSV = 0;
 // ============================================================================
 // PART 2: CÁC HÀM XỬ LÝ FILE & LOGIC ĐIỂM (KHÔNG ĐỔI)
 // ============================================================================
+void trimSpace(char *str) {
+    int start = 0;
+    while (str[start] == ' ' || str[start] == '\t' || str[start] == '\r' || str[start] == '\n') {
+        start++;
+    }
+    if (start > 0) {
+        int i = 0;
+        while (str[start + i] != '\0') {
+            str[i] = str[start + i];
+            i++;
+        }
+        str[i] = '\0';
+    }
+    int len = strlen(str);
+    while (len > 0 && (str[len - 1] == ' ' || str[len - 1] == '\t' || str[len - 1] == '\r' || str[len - 1] == '\n')) {
+        str[--len] = '\0';
+    }
+}
+
+bool parseDongDiem(const char* line, SinhVien* sv) {
+    char tempLine[512];
+    strncpy(tempLine, line, sizeof(tempLine) - 1);
+    tempLine[sizeof(tempLine) - 1] = '\0';
+    
+    trimSpace(tempLine);
+    if (strlen(tempLine) < 5) return false;
+    
+    int len = strlen(tempLine);
+    int spaceCount = 0;
+    int indexDiemStart = -1;
+    
+    for (int i = len - 1; i >= 0; i--) {
+        if (tempLine[i] == ' ' || tempLine[i] == '\t') {
+            if (i < len - 1 && tempLine[i + 1] != ' ' && tempLine[i + 1] != '\t') {
+                spaceCount++;
+                if (spaceCount == 6) {
+                    indexDiemStart = i;
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (indexDiemStart == -1) return false;
+    
+    float l1, l2, p1, p2, pres, fin;
+    if (sscanf(&tempLine[indexDiemStart], "%f %f %f %f %f %f", &l1, &l2, &p1, &p2, &pres, &fin) != 6) {
+        return false;
+    }
+    
+    tempLine[indexDiemStart] = '\0';
+    
+    char tempMaSV[50] = "";
+    char tempLop[50] = "";
+    int parsed = sscanf(tempLine, "%49s %49s", tempMaSV, tempLop);
+    if (parsed < 2) return false;
+    
+    char *p = strstr(tempLine, tempLop);
+    if (!p) return false;
+    p += strlen(tempLop);
+    
+    strncpy(sv->maSV, tempMaSV, sizeof(sv->maSV) - 1);
+    sv->maSV[sizeof(sv->maSV) - 1] = '\0';
+    
+    strncpy(sv->lop, tempLop, sizeof(sv->lop) - 1);
+    sv->lop[sizeof(sv->lop) - 1] = '\0';
+    
+    strncpy(sv->tenSV, p, sizeof(sv->tenSV) - 1);
+    sv->tenSV[sizeof(sv->tenSV) - 1] = '\0';
+    trimSpace(sv->tenSV);
+    
+    sv->lab1 = l1;
+    sv->lab2 = l2;
+    sv->pt1 = p1;
+    sv->pt2 = p2;
+    sv->presentation = pres;
+    sv->finalTest = fin;
+    
+    return true;
+}
 void docFilemonhoc() {
     FILE *fp = fopen("monhoc.txt", "r");
     if (!fp) {
@@ -244,18 +324,7 @@ bool docFile(char tenFile[]) {
 
     n = 0;
     while (fgets(line, sizeof(line), fp) && n < MAX) {
-        if (strlen(line) < 5) continue;
-        int check = sscanf(line, "%19s %19s %[^0-9.-] %f %f %f %f %f %f", 
-                           ds[n].maSV, ds[n].lop, ds[n].tenSV, 
-                           &ds[n].lab1, &ds[n].lab2, &ds[n].pt1, &ds[n].pt2, 
-                           &ds[n].presentation, &ds[n].finalTest);
-
-        if (check >= 2) { 
-            int len = strlen(ds[n].tenSV);
-            while(len > 0 && (ds[n].tenSV[len-1] == ' ' || ds[n].tenSV[len-1] == '\t' || 
-                              ds[n].tenSV[len-1] == '\r' || ds[n].tenSV[len-1] == '\n')) {
-                ds[n].tenSV[--len] = '\0';
-            }
+        if (parseDongDiem(line, &ds[n])) {
             tinhDiem(&ds[n]);
             n++;
         }
@@ -279,9 +348,12 @@ void docFileSinhVien() {
         p2 = strchr(p1 + 1, '\t');
         if (!p2) continue;
         *p2 = '\0';
-        strcpy(dsSV[nSV].maSV, line);
-        strcpy(dsSV[nSV].lop, p1 + 1);
-        strcpy(dsSV[nSV].tenSV, p2 + 1);
+        strncpy(dsSV[nSV].maSV, line, sizeof(dsSV[nSV].maSV) - 1);
+        dsSV[nSV].maSV[sizeof(dsSV[nSV].maSV) - 1] = '\0';
+        strncpy(dsSV[nSV].lop, p1 + 1, sizeof(dsSV[nSV].lop) - 1);
+        dsSV[nSV].lop[sizeof(dsSV[nSV].lop) - 1] = '\0';
+        strncpy(dsSV[nSV].tenSV, p2 + 1, sizeof(dsSV[nSV].tenSV) - 1);
+        dsSV[nSV].tenSV[sizeof(dsSV[nSV].tenSV) - 1] = '\0';
         nSV++;
     }
     fclose(fp);
@@ -547,18 +619,7 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
                             }
 
                             while (fgets(line, sizeof(line), fpTemp) && temp_n < MAX) {
-                                if (strlen(line) < 5) continue;
-                                int check = sscanf(line, "%19s %19s %[^0-9.-] %f %f %f %f %f %f", 
-                                                   temp_ds[temp_n].maSV, temp_ds[temp_n].lop, temp_ds[temp_n].tenSV, 
-                                                   &temp_ds[temp_n].lab1, &temp_ds[temp_n].lab2, &temp_ds[temp_n].pt1, &temp_ds[temp_n].pt2, 
-                                                   &temp_ds[temp_n].presentation, &temp_ds[temp_n].finalTest);
-
-                                if (check >= 2) { 
-                                    int len = strlen(temp_ds[temp_n].tenSV);
-                                    while(len > 0 && (temp_ds[temp_n].tenSV[len-1] == ' ' || temp_ds[temp_n].tenSV[len-1] == '\t' || 
-                                                      temp_ds[temp_n].tenSV[len-1] == '\r' || temp_ds[temp_n].tenSV[len-1] == '\n')) {
-                                        temp_ds[temp_n].tenSV[--len] = '\0';
-                                    }
+                                if (parseDongDiem(line, &temp_ds[temp_n])) {
                                     temp_n++;
                                 }
                             }
@@ -1415,6 +1476,8 @@ else {
                             MonHoc newMon;
                             strcpy(newMon.tenMon, add_mon_ten);
                             newMon.soHocPhan = add_mon_so_hp;
+
+                            CreateDirectoryA("Res", NULL);
 
                             for (int i = 0; i < add_mon_so_hp; i++) {
                                 char maHPLower[20];
