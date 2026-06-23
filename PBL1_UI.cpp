@@ -622,9 +622,12 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
             for (int i = 0; i < soMon; i++) {
                 const bool is_selected = (mon_selected_idx == i);
                 if (ImGui::Selectable(dsMonHoc[i].tenMon, is_selected)) {
-                    mon_selected_idx = i;
-                    hp_selected_idx = -1; 
-                }
+    mon_selected_idx = i;
+    hp_selected_idx = -1;
+    detail_sv_idx = -1;
+    show_student_detail = false;
+    search_mssv[0] = '\0';
+}
             }
             ImGui::EndListBox();
         }
@@ -639,9 +642,12 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
                 for (int i = 0; i < currentMon.soHocPhan; i++) {
                     const bool is_selected = (hp_selected_idx == i);
                     if (ImGui::Selectable(currentMon.dsHocPhan[i].maHP, is_selected)) {
-                        hp_selected_idx = i;
-                        docFile(currentMon.dsHocPhan[i].fileHP);
-                    }
+    hp_selected_idx = i;
+    docFile(currentMon.dsHocPhan[i].fileHP);
+    detail_sv_idx = -1;
+    show_student_detail = false;
+    search_mssv[0] = '\0';
+}
                 }
                 ImGui::EndListBox();
             }
