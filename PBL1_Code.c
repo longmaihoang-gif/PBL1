@@ -393,10 +393,12 @@ void nhap(char tenFileChinh[]) {
                 else if (lc == 5) diemPtr = &ds[i].presentation;
                 else diemPtr = &ds[i].finalTest;
 
+                //Sao lưu giá trị nếu có nhập -2 để dừng
                 float backup = *diemPtr;
                 nhapTheoCot(diemPtr, i, tenCot[lc - 1], i == 0);
 
                 if (*diemPtr == -999) {
+                    // Gán ngược lại điểm cũ nếu nhập -2
                     *diemPtr = backup;
                     break;
                 }
