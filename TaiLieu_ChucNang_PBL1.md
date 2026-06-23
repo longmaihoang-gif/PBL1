@@ -35,7 +35,7 @@ Dưới đây là chi tiết hoạt động của 8 tính năng tương ứng v�
     3.  Với mỗi sinh viên trong danh sách học phần, chương trình hiển thị điểm hiện tại và yêu cầu nhập điểm mới:
         *   Để trống và nhấn **Enter**: Giữ nguyên điểm cũ (bỏ qua).
         *   Nhập `-2`: Dừng sớm quá trình nhập điểm của cột này.
-        *   Nhập giá trị hợp lệ từ `0` đến `10`: Cập nhật điểm thành phần và tự động tính lại điểm trung bình bằng hàm [tinhDiem](PBL1_Code.c#L183).
+        *   Nhập giá trị điểm số: Tự động giới hạn (clamp) trong khoảng từ `0` đến `10` (nếu nhập ngoài khoảng này sẽ tự lấy giá trị gần nhất thỏa điều kiện) và cập nhật điểm thành phần, tự động tính lại điểm trung bình bằng hàm [tinhDiem](PBL1_Code.c#L183).
     4.  Sau khi nhập xong, hệ thống hỏi người dùng có muốn lưu thay đổi vào file học phần không. Nếu có, chương trình gọi hàm [ghiFile](PBL1_Code.c#L197) để lưu trữ vĩnh viễn.
 
 ### 3.2. Xem Danh Sách (Lựa chọn 2)
@@ -56,7 +56,7 @@ Dưới đây là chi tiết hoạt động của 8 tính năng tương ứng v�
         *   Sửa điểm Presentation.
         *   Sửa điểm Final Test.
         *   Sửa toàn bộ điểm chưa chốt.
-    3.  Chương trình kiểm tra trạng thái chốt của cột điểm tương ứng thông qua mảng trạng thái `colLocked`: cột nào đã chốt sẽ hiển thị nhãn `[CHOT]` và không cho phép thay đổi dữ liệu.
+    3.  Chương trình kiểm tra trạng thái chốt của cột điểm tương ứng thông qua mảng trạng thái `colLocked`: cột nào đã chốt sẽ hiển thị nhãn `[CHOT]` và không cho phép thay đổi dữ liệu. Khi sửa điểm, điểm số nhập vào cũng sẽ được tự động giới hạn (clamp) trong khoảng từ `0` đến `10` tương tự như lúc nhập mới.
     4.  Nhập dữ liệu mới xong, hệ thống gọi hàm [tinhDiem](PBL1_Code.c#L183) để cập nhật ngay Điểm trung bình và Điểm chữ, sau đó lưu lại file thông qua hàm [ghiFile](PBL1_Code.c#L197).
 
 ### 3.4. Sắp Xếp (Lựa chọn 4)
@@ -83,9 +83,9 @@ Dưới đây là chi tiết hoạt động của 8 tính năng tương ứng v�
 *   **Hàm chính xử lý:** [Chotcotdiem](PBL1_Code.c#L1169) và hàm kiểm tra dữ liệu [cotCoDuDiem](PBL1_Code.c#L289).
 *   **Cách thức hoạt động:**
     1.  In ra trạng thái hiện tại của cả 6 cột điểm (đã chốt / chưa chốt).
-    2.  Cho phép chọn chốt một cột điểm cụ thể (từ 1 đến 6) hoặc chốt tất cả các cột điểm đủ điều kiện (lựa chọn 7).
-    3.  **Ràng buộc nghiêm ngặt:** Hàm [cotCoDuDiem](PBL1_Code.c#L289) sẽ kiểm tra xem tất cả sinh viên trong học phần đã được nhập điểm cho cột này chưa (điểm >= 0). Nếu còn sinh viên thiếu điểm (điểm có giá trị âm mặc định là `-1`), chương trình sẽ từ chối chốt cột này để tránh lỗi tính toán.
-    4.  Khi chốt thành công, biến cờ tương ứng trong mảng `colLocked` sẽ đổi trạng thái từ `0` sang `1` và ghi đè trạng thái cập nhật vào file dữ liệu `.dat`.
+    2.  Cho phép chọn chốt một cột điểm cụ thể (từ 1 đến 6) hoặc chốt tất cả các cột điểm chưa chốt nếu toàn bộ các cột đó đều thỏa mãn điều kiện đủ điểm (lựa chọn 7).
+    3.  **Ràng buộc nghiêm ngặt:** Hàm [cotCoDuDiem](PBL1_Code.c#L289) sẽ kiểm tra xem sĩ số học phần có lớn hơn 0 hay không (`n >= 1`) và tất cả sinh viên trong học phần đã được nhập điểm cho cột này chưa (điểm >= 0). Nếu lớp chưa có sinh viên hoặc còn sinh viên thiếu điểm (điểm có giá trị âm mặc định là `-1`), chương trình sẽ từ chối chốt cột này để tránh lỗi tính toán.
+    4.  **Cảnh báo xác nhận không hoàn tác:** Khi thực hiện chốt điểm (từng cột hoặc toàn bộ), hệ thống sẽ in dòng cảnh báo nổi bật về việc thao tác không thể hoàn lại trước khi cho phép người dùng xác nhận chốt. Khi đồng ý chốt, biến cờ tương ứng trong mảng `colLocked` sẽ đổi trạng thái từ `0` sang `1` và ghi đè trạng thái cập nhật vào file dữ liệu `.dat`.
 
 ### 3.7. Quản Lý Sinh Viên (Lựa chọn 7)
 Menu con quản lý sinh viên [quanLySinhVien](PBL1_Code.c#L1056) gồm 3 tính năng:
@@ -99,6 +99,7 @@ Menu con quản lý sinh viên [quanLySinhVien](PBL1_Code.c#L1056) gồm 3 tính
         *   Sinh viên chưa đăng ký học phần này.
         *   **Luật kinh điển:** Sinh viên không được phép đăng ký học phần khác của cùng môn học đó (sử dụng hàm [svCoTrongFile](PBL1_Code.c#L111) để duyệt kiểm tra chéo các file dữ liệu học phần khác của môn).
         *   Học phần chưa vượt quá sĩ số tối đa (`soSVToiDa`).
+        *   **Luật chốt chặn học phần:** Học phần hiện tại chưa chốt bất kỳ cột điểm nào (không tồn tại cột điểm nào trong trạng thái đã chốt).
     *   Nếu tất cả điều kiện thỏa mãn, thêm sinh viên mới vào cuối danh sách với tất cả điểm số khởi tạo bằng `-1`. Lưu thông tin cập nhật vào file `.dat`.
 3.  **Loại bỏ sinh viên:** Hàm [loaiBoSinhVien](PBL1_Code.c#L1031).
     *   *Loại khỏi môn học:* Hàm [loaiBoSinhVienKhoiMonHoc](PBL1_Code.c#L911). Yêu cầu nhập MSSV để xóa. **Quy định chống gian lận:** Không cho phép xóa sinh viên đã hoàn thành điểm cuối kỳ (Final Test >= 0).
@@ -127,7 +128,10 @@ Menu con quản lý sinh viên [quanLySinhVien](PBL1_Code.c#L1056) gồm 3 tính
 | Ràng Buộc | Phạm Vi | Cơ Chế Kiểm Soát |
 | :--- | :--- | :--- |
 | **Khóa điểm số** | Nhập/Sửa điểm | Mảng cờ `colLocked[6]`. Cột đã khóa không thể thay đổi dữ liệu trừ khi can thiệp vào file cấu hình. |
-| **Điều kiện khóa** | Khóa cột điểm | Hàm [cotCoDuDiem](PBL1_Code.c#L289) kiểm tra không còn sinh viên nào mang điểm `-1` trên cột chỉ định. |
+| **Điều kiện khóa** | Khóa cột điểm | Hàm [cotCoDuDiem](PBL1_Code.c#L289) kiểm tra sĩ số lớp `n >= 1` và không còn sinh viên nào mang điểm `-1` trên cột chỉ định. |
+| **Giới hạn điểm nhập** | Nhập/Sửa điểm | Tự động giới hạn (clamp) điểm số nhập vào về khoảng `[0.0, 10.0]` nếu nhập ngoài khoảng này. |
+| **Chốt chặn thêm SV** | Thêm SV vào học phần | Không cho phép thêm sinh viên mới nếu lớp học phần đã chốt ít nhất 1 cột điểm. |
+| **Quy tắc chốt tất cả** | Khóa toàn bộ điểm | Chỉ cho phép chốt toàn bộ các cột điểm chưa chốt khi tất cả các cột chưa chốt đều đã nhập đủ điểm. |
 | **Công thức điểm** | Điểm Trung Bình | `DTB = (Lab1 + Lab2) * wLab + (PT1 + PT2) * wPT + Presentation * wPre + FinalTest * wFinal` |
 | **Khung học lực** | Xếp loại điểm chữ | `DTB >= 8.5` $\to$ A; `DTB >= 7.0` $\to$ B; `DTB >= 5.5` $\to$ C; `DTB >= 4.0` $\to$ D; còn lại $\to$ F (nếu đã đủ các đầu điểm). |
 | **Giới hạn đăng ký** | Thêm SV vào lớp | Mỗi sinh viên chỉ được tham gia tối đa 1 học phần đối với mỗi môn học để tránh học song song cùng một môn. |

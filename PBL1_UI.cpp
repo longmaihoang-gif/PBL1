@@ -1181,7 +1181,7 @@ ImGui::TableSetupColumn("Thao tác", ImGuiTableColumnFlags_WidthFixed, 100.0f);
                     ImGui::Separator();
                     ImGui::Text("Bạn có chắc chắn muốn chốt cột điểm: %s?", tenCotGlobal[show_confirm_chot_col]);
                     ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Lưu ý: Thao tác này KHÔNG THỂ HOÀN LẠI.");
-                    ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Sau khi chốt, Sensei sẽ không thể chỉnh sửa điểm cột này nữa!");
+                    ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Sau khi chốt, bạn sẽ không thể chỉnh sửa điểm cột này nữa!");
                     ImGui::Separator();
                     if (ImGui::Button("Xác nhận chốt", ImVec2(150, 0))) {
                         colLocked[show_confirm_chot_col] = 1;
