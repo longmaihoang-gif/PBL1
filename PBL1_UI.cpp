@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <conio.h>
 #include <stdbool.h>
-
+#include <ctype.h>
 // Nhúng các thư viện giao diện đồ họa Dear ImGui & GLFW
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
@@ -813,18 +813,34 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
         if (!can_add) {
             ImGui::BeginDisabled();
         }
-        if (ImGui::Button("Thêm vào danh sách tổng", ImVec2(-FLT_MIN, 0))) {
-            if (timSVTheoMSSV(add_mssv) >= 0) {
-                ImGui::OpenPopup("LoiTrungMSSV");
-            } else {
-                strcpy(dsSV[nSV].maSV, add_mssv);
-                strcpy(dsSV[nSV].lop, add_lop);
-                strcpy(dsSV[nSV].tenSV, add_ten);
-                nSV++;
-                ghiFileSinhVien(); 
-                add_mssv[0] = '\0'; add_lop[0] = '\0'; add_ten[0] = '\0';
-            }
+       if (ImGui::Button("Thêm vào danh sách tổng", ImVec2(-FLT_MIN, 0))) {
+
+    bool tenHopLe = true;
+    for (int i = 0; add_ten[i]; i++) {
+        if (isdigit((unsigned char)add_ten[i])) {
+            tenHopLe = false;
+            break;
         }
+    }
+
+    if (!tenHopLe) {
+        ImGui::OpenPopup("LoiTen");
+    }
+    else if (timSVTheoMSSV(add_mssv) >= 0) {
+        ImGui::OpenPopup("LoiTrungMSSV");
+    }
+    else {
+        strcpy(dsSV[nSV].maSV, add_mssv);
+        strcpy(dsSV[nSV].lop, add_lop);
+        strcpy(dsSV[nSV].tenSV, add_ten);
+        nSV++;
+        ghiFileSinhVien();
+
+        add_mssv[0] = '\0';
+        add_lop[0] = '\0';
+        add_ten[0] = '\0';
+    }
+}
         if (!can_add) {
             ImGui::EndDisabled();
         }
@@ -835,6 +851,17 @@ if (ImGui::BeginPopupModal("DanhSachTong", NULL, ImGuiWindowFlags_AlwaysAutoResi
             if (ImGui::Button("Đóng", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
             ImGui::EndPopup();
         }
+        if (ImGui::BeginPopupModal("LoiTen", NULL,
+    ImGuiWindowFlags_AlwaysAutoResize))
+{
+    ImGui::Text("Ho ten khong duoc chua chu so!");
+
+    if (ImGui::Button("Đóng")) {
+        ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::EndPopup();
+}
 
 
         ImGui::End();
